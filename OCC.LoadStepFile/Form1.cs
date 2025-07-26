@@ -100,15 +100,12 @@ namespace OCC.LoadStepFile
 
             // * 쉐이딩 모드로 설정
             _occtProxy.SetShadingMode();
-            
+
             // * 선택 색상 적용
-            _occtProxy.SetSeletedStyle(220, 10, 10);
-            
+            _occtProxy.SetSelectedStyle(220, 10, 10);
+
             // * 하이라이트 색상 적용
             _occtProxy.SetHighlightStyle(23, 44, 120);
-
-            // * 현재 컬러 가져오기
-            GetCurrentColor();
         }
 
         /// <summary>
@@ -177,25 +174,13 @@ namespace OCC.LoadStepFile
             _occtProxy.EnableAmbientOcclusion();
         }
 
-        private bool GetCurrentColor()
-        {
-            bool ret = true;
-
-            int r, g, b;
-
-            r = _occtProxy.GetObjColR();
-            g = _occtProxy.GetObjColG();
-            b = _occtProxy.GetObjColB();
-
-            Color color = Color.FromArgb(r, g, b);
-            barEditColor.EditValue = color;
-
-            return ret;
-        }
-
         private void barEditColor_EditValueChanged(object sender, EventArgs e)
         {
-
+            Color color = (Color)barEditColor.EditValue;
+            int r = color.R;
+            int g = color.G;
+            int b = color.B;
+            _occtProxy.SetColor(r, g, b);
         }
 
         private void panel1_MouseUp(object sender, MouseEventArgs e)
@@ -210,7 +195,22 @@ namespace OCC.LoadStepFile
 
         private void btnAllSelect_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
+            // * 모든 객체 선택
             _occtProxy.SelectAllObject();
+        }
+
+        private void barButtonItem2_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
+        {
+            bool selectd = _occtProxy.IsObjectSelected();
+
+            if (selectd)
+            {
+                MessageBox.Show("선택된 것이 있는 상태", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("선택된 것이 없는 상태","",MessageBoxButtons.OK,MessageBoxIcon.Error);
+            }
         }
     }
 }

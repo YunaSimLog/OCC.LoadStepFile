@@ -40,14 +40,15 @@
             this.btnShowShadingMode = new DevExpress.XtraBars.BarButtonItem();
             this.btnShowWireMode = new DevExpress.XtraBars.BarButtonItem();
             this.btnAmbientOcclusion = new DevExpress.XtraBars.BarButtonItem();
-            this.ribbonControl1 = new DevExpress.XtraBars.Ribbon.RibbonControl();
-            this.barButtonItem1 = new DevExpress.XtraBars.BarButtonItem();
-            this.ribbonPageGroup4 = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
             this.barEditColor = new DevExpress.XtraBars.BarEditItem();
             this.repositoryItemColorPickEdit1 = new DevExpress.XtraEditors.Repository.RepositoryItemColorPickEdit();
+            this.ribbonPageGroup4 = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
             this.btnAllSelect = new DevExpress.XtraBars.BarButtonItem();
-            ((System.ComponentModel.ISupportInitialize)(this.ribbonControl1)).BeginInit();
+            this.barButtonItem2 = new DevExpress.XtraBars.BarButtonItem();
+            this.ribbonControl1 = new DevExpress.XtraBars.Ribbon.RibbonControl();
+            this.barButtonItem1 = new DevExpress.XtraBars.BarButtonItem();
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemColorPickEdit1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.ribbonControl1)).BeginInit();
             this.SuspendLayout();
             // 
             // panel1
@@ -133,6 +134,45 @@
             this.btnAmbientOcclusion.Name = "btnAmbientOcclusion";
             this.btnAmbientOcclusion.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.btnAmbientOcclusion_ItemClick);
             // 
+            // barEditColor
+            // 
+            this.barEditColor.Caption = "모델 색상 변경";
+            this.barEditColor.Edit = this.repositoryItemColorPickEdit1;
+            this.barEditColor.Id = 7;
+            this.barEditColor.Name = "barEditColor";
+            this.barEditColor.EditValueChanged += new System.EventHandler(this.barEditColor_EditValueChanged);
+            // 
+            // repositoryItemColorPickEdit1
+            // 
+            this.repositoryItemColorPickEdit1.AutoHeight = false;
+            this.repositoryItemColorPickEdit1.AutomaticColor = System.Drawing.Color.Black;
+            this.repositoryItemColorPickEdit1.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)});
+            this.repositoryItemColorPickEdit1.Name = "repositoryItemColorPickEdit1";
+            this.repositoryItemColorPickEdit1.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor;
+            // 
+            // ribbonPageGroup4
+            // 
+            this.ribbonPageGroup4.ItemLinks.Add(this.btnAllSelect);
+            this.ribbonPageGroup4.ItemLinks.Add(this.barButtonItem2);
+            this.ribbonPageGroup4.Name = "ribbonPageGroup4";
+            this.ribbonPageGroup4.Text = "선택";
+            // 
+            // btnAllSelect
+            // 
+            this.btnAllSelect.Caption = "전체 선택";
+            this.btnAllSelect.Id = 8;
+            this.btnAllSelect.ImageOptions.SvgImage = ((DevExpress.Utils.Svg.SvgImage)(resources.GetObject("btnAllSelect.ImageOptions.SvgImage")));
+            this.btnAllSelect.Name = "btnAllSelect";
+            this.btnAllSelect.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.btnAllSelect_ItemClick);
+            // 
+            // barButtonItem2
+            // 
+            this.barButtonItem2.Caption = "선택된 상태인지 확인";
+            this.barButtonItem2.Id = 9;
+            this.barButtonItem2.Name = "barButtonItem2";
+            this.barButtonItem2.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.barButtonItem2_ItemClick);
+            // 
             // ribbonControl1
             // 
             this.ribbonControl1.EmptyAreaImageOptions.ImagePadding = new System.Windows.Forms.Padding(35, 32, 35, 32);
@@ -146,10 +186,11 @@
             this.btnShowWireMode,
             this.btnAmbientOcclusion,
             this.barEditColor,
-            this.btnAllSelect});
+            this.btnAllSelect,
+            this.barButtonItem2});
             this.ribbonControl1.Location = new System.Drawing.Point(0, 0);
             this.ribbonControl1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.ribbonControl1.MaxItemId = 9;
+            this.ribbonControl1.MaxItemId = 10;
             this.ribbonControl1.Name = "ribbonControl1";
             this.ribbonControl1.OptionsMenuMinWidth = 385;
             this.ribbonControl1.PageCategories.AddRange(new DevExpress.XtraBars.Ribbon.RibbonPageCategory[] {
@@ -166,36 +207,6 @@
             this.barButtonItem1.Id = 2;
             this.barButtonItem1.Name = "barButtonItem1";
             // 
-            // ribbonPageGroup4
-            // 
-            this.ribbonPageGroup4.ItemLinks.Add(this.btnAllSelect);
-            this.ribbonPageGroup4.Name = "ribbonPageGroup4";
-            this.ribbonPageGroup4.Text = "선택";
-            // 
-            // barEditColor
-            // 
-            this.barEditColor.Caption = "모델 색상";
-            this.barEditColor.Edit = this.repositoryItemColorPickEdit1;
-            this.barEditColor.Id = 7;
-            this.barEditColor.Name = "barEditColor";
-            this.barEditColor.EditValueChanged += new System.EventHandler(this.barEditColor_EditValueChanged);
-            // 
-            // repositoryItemColorPickEdit1
-            // 
-            this.repositoryItemColorPickEdit1.AutoHeight = false;
-            this.repositoryItemColorPickEdit1.AutomaticColor = System.Drawing.Color.Black;
-            this.repositoryItemColorPickEdit1.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)});
-            this.repositoryItemColorPickEdit1.Name = "repositoryItemColorPickEdit1";
-            // 
-            // btnAllSelect
-            // 
-            this.btnAllSelect.Caption = "전체 선택";
-            this.btnAllSelect.Id = 8;
-            this.btnAllSelect.ImageOptions.SvgImage = ((DevExpress.Utils.Svg.SvgImage)(resources.GetObject("btnAllSelect.ImageOptions.SvgImage")));
-            this.btnAllSelect.Name = "btnAllSelect";
-            this.btnAllSelect.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.btnAllSelect_ItemClick);
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 14F);
@@ -208,8 +219,8 @@
             this.Ribbon = this.ribbonControl1;
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.Form1_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.ribbonControl1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemColorPickEdit1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.ribbonControl1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -233,6 +244,7 @@
         private DevExpress.XtraBars.BarEditItem barEditColor;
         private DevExpress.XtraEditors.Repository.RepositoryItemColorPickEdit repositoryItemColorPickEdit1;
         private DevExpress.XtraBars.BarButtonItem btnAllSelect;
+        private DevExpress.XtraBars.BarButtonItem barButtonItem2;
     }
 }
 

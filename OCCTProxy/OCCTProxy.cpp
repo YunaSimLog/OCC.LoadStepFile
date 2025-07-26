@@ -271,49 +271,62 @@ public:
 		}
 	}
 
+	/// <summary>
+	/// 전체 객체 선택
+	/// </summary>
 	void SelectAllObject()
 	{
-		// 선택 스타일
-		Handle(Prs3d_Drawer) selStyle = new Prs3d_Drawer();
-		selStyle->SetColor(Quantity_NOC_RED);
-		selStyle->SetDisplayMode(1);
-		selStyle->SetTransparency(0.0f);
-		myAISContext()->SetSelectionStyle(selStyle);
+		if (!myAISContext().IsNull())
+		{
+			// * 선택 결과를 저장할 리스트
+			AIS_ListOfInteractive aList;
+			// * 모든 타입을 선택한다.
+			//  - Signature == -1 → Edge, Face, Vertex, Solid 등 모든 TopoDS_Shape 하위 항목 포함
+			int Signature = -1;
+			// #01. 화면에 표시되고 있는 객체들 중 타입에 맞는 객체를 aList에 추가한다.
+			myAISContext()->DisplayedObjects(AIS_KOI_Shape, Signature, aList);
 
-		//myAISContext()->ClearSelected(false);
+			// #02. 선택 초기화
+			myAISContext()->ClearSelected(false);
 
-		//AIS_ListOfInteractive displayedObjects;
-		//myAISContext()->DisplayedObjects(displayedObjects);
+			// #03. 현재 선택된 경우의 스타일을 가져온다.
+			Handle(Prs3d_Drawer) selectedStyle = myAISContext()->HighlightStyle(Prs3d_TypeOfHighlight_Selected);
 
-		//for (AIS_ListIteratorOfListOfInteractive it(displayedObjects); it.More(); it.Next())
-		//{
-		//	const Handle(AIS_InteractiveObject)& obj = it.Value();
+			// #04. 가져온 선택 리스트 순회
+			for (AIS_ListIteratorOfListOfInteractive it(aList); it.More(); it.Next())
+			{
+				// #04-1. 선택된 항목을 AIS_InteractiveObject 형으로 변환
+				Handle(AIS_InteractiveObject) obj = it.Value();
 
-		//	// STEP에서 불러온 AIS_Shape 객체는 반드시 활성화 필요
-		//	myAISContext()->Activate(obj, 0, false); // 0 = default face/solid shape selection
+				// #04-2. 해당 객체 선택
+				myAISContext()->AddSelect(obj);
 
-		//	// 선택
-		//	myAISContext()->AddSelect(obj);
-		//}
+				// * 선택 하이라이트를 현재 선택된 경우의 스타일로 적용한다.
+				//  - 아래 코드를 수행하지 않으면, 선택 스타일이 적용 안된다.
+				//  - AddSelect으로 선택한건, 선택 스타일이 안먹는 것 같다.
+				myAISContext()->HilightWithColor(obj, selectedStyle, false);
+			}
 
-		//myAISContext()->UpdateCurrentViewer();
+			// #05. 뷰 업데이트
+			myAISContext()->UpdateCurrentViewer();
+		}
 	}
 
 	/// <summary>
 	/// 선택 색상 설정
 	/// </summary>
-	void SetSeletedStyle(int theR, int theG, int theB)
+	void SetSelectedStyle(int theR, int theG, int theB)
 	{
-		// * 색상 생성
-		Quantity_Color aCol = Quantity_Color(theR / 255., theG / 255., theB / 255., Quantity_TOC_RGB);
+		if (!myAISContext().IsNull())
+		{
+			// * 색상 생성
+			Quantity_Color aCol = Quantity_Color(theR / 255., theG / 255., theB / 255., Quantity_TOC_RGB);
 
-		Handle(Prs3d_Drawer) selStyle = new Prs3d_Drawer();
-		selStyle->SetColor(aCol);						 // 색상 부여
-		selStyle->SetDisplayMode(1);					 // Shading 모드
-		selStyle->SetTransparency(0.0f);		// 불투명
-
-		// * 선택 스타일 설정
-		myAISContext()->SetSelectionStyle(selStyle);
+			// 선택 시 적용되는 강조 스타일 설정 (7.5 버전 이상 부터 지원)
+			myAISContext()->HighlightStyle(Prs3d_TypeOfHighlight_Selected)->SetColor(aCol); // 색깔 반영은 됨
+			myAISContext()->HighlightStyle(Prs3d_TypeOfHighlight_Selected)->SetDisplayMode(1); // 색깔 반영은 됨
+			myAISContext()->HighlightStyle(Prs3d_TypeOfHighlight_Selected)->SetTransparency(0.0f);
+		}
 	}
 
 	/// <summary>
@@ -324,16 +337,19 @@ public:
 	/// <param name="theB"></param>
 	void SetHighlightStyle(int theR, int theG, int theB)
 	{
-		// * 색상 생성
-		Quantity_Color aCol = Quantity_Color(theR / 255., theG / 255., theB / 255., Quantity_TOC_RGB);
+		if (!myAISContext().IsNull())
+		{
+			// * 색상 생성
+			Quantity_Color aCol = Quantity_Color(theR / 255., theG / 255., theB / 255., Quantity_TOC_RGB);
 
-		Handle(Prs3d_Drawer) highlightStyle = new Prs3d_Drawer();
-		highlightStyle->SetColor(aCol);								// 색상 부여
-		highlightStyle->SetDisplayMode(1);							// Shading 모드
-		highlightStyle->SetTransparency(0.0);           // 불투명
+			Handle(Prs3d_Drawer) highlightStyle = new Prs3d_Drawer();
+			highlightStyle->SetColor(aCol);								// 색상 부여
+			highlightStyle->SetDisplayMode(1);							// Shading 모드
+			highlightStyle->SetTransparency(0.0);           // 불투명
 
-		// 하이라이트 스타일 설정
-		myAISContext()->SetHighlightStyle(highlightStyle);
+			// 하이라이트 스타일 설정
+			myAISContext()->SetHighlightStyle(highlightStyle);
+		}
 	}
 
 	/// <summary>
@@ -592,7 +608,7 @@ public:
 	/// </summary>
 	void SetShadingMode()
 	{
-		// #01. 현재 객체가 있는지 여부 확인
+		// #01. 컨텍스트가 있는지 여부 확인
 		if (myAISContext().IsNull())
 		{
 			return;
@@ -610,7 +626,7 @@ public:
 
 	void SetWireMode()
 	{
-		// #01. 현재 객체가 있는지 여부 확인
+		// #01. 컨텍스트가 있는지 여부 확인
 		if (myAISContext().IsNull())
 		{
 			return;
@@ -627,19 +643,26 @@ public:
 	}
 
 	/// <summary>
-	/// Set color
+	/// 선택 객체에 색상 적용
 	/// </summary>
 	void SetColor(int theR, int theG, int theB)
 	{
+		// #01. 컨텍스트가 있는지 여부
 		if (myAISContext().IsNull())
 		{
 			return;
 		}
+
+		// #02. 색상 정보 생성
 		Quantity_Color aCol = Quantity_Color(theR / 255., theG / 255., theB / 255., Quantity_TOC_RGB);
-		for (; myAISContext()->MoreSelected(); myAISContext()->NextSelected())
+
+		// #03. 선택 객체 순회하며 색상 적용
+		for (myAISContext()->InitSelected(); myAISContext()->MoreSelected(); myAISContext()->NextSelected())
 		{
 			myAISContext()->SetColor(myAISContext()->SelectedInteractive(), aCol, Standard_False);
 		}
+
+		// #04. 뷰 업데이트
 		myAISContext()->UpdateCurrentViewer();
 	}
 
