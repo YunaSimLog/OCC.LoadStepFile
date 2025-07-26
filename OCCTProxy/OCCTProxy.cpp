@@ -33,6 +33,12 @@
 // wrapper of pure C++ classes to ref classes
 #include <NCollection_Haft.h>
 
+// View Cube
+#include <AIS_ViewCube.hxx>
+#include <Prs3d_DatumAspect.hxx>
+#include <Graphic3d_AspectText3d.hxx>
+#include <Quantity_Color.hxx>
+
 // 엠비언트 오클루젼
 #include <Graphic3d_RenderingParams.hxx>
 #include <Graphic3d_RenderingMode.hxx>
@@ -350,6 +356,44 @@ public:
 			// 하이라이트 스타일 설정
 			myAISContext()->SetHighlightStyle(highlightStyle);
 		}
+	}
+
+	void SetViweCube()
+	{
+		// #01. 뷰 큐브 객체 생성
+		Handle(AIS_ViewCube) theViewCube = new AIS_ViewCube();
+
+		// #02. 뷰 큐브의 기본 속성 가져오기
+		const Handle(Prs3d_Drawer)& aDrawer = theViewCube->Attributes();
+
+		// #03. 기준축을 설정하기 위한 새 객체 생성
+		aDrawer->SetDatumAspect(new Prs3d_DatumAspect());
+
+		// #04. 기준축 설정하기 위한 새 객체를 핸들로 받아온다.
+		const Handle(Prs3d_DatumAspect)& aDatumAsp = aDrawer->DatumAspect();
+
+		// #05. 축 텍스트 색상 설정
+		aDatumAsp->TextAspect(Prs3d_DatumParts_XAxis)->SetColor(Quantity_NOC_RED);
+		aDatumAsp->TextAspect(Prs3d_DatumParts_YAxis)->SetColor(Quantity_NOC_GREEN);
+		aDatumAsp->TextAspect(Prs3d_DatumParts_ZAxis)->SetColor(Quantity_NOC_BLUE);
+
+		// #06. Transform Persistence를 통해 위치 설정
+		Handle(Graphic3d_TransformPers) aTrsfPers =
+			new Graphic3d_TransformPers(Graphic3d_TMF_TriedronPers,	// 화면상에 고정되어 움직이지 않도록 (카메라 회전, 확대/ 축소 영향을 받지 않도록)
+				Aspect_TOTP_RIGHT_LOWER,						// 우측 하단
+				Graphic3d_Vec2i(100, 100));	// 오프셋 되는 위치 
+
+		// #07. 뷰 큐브 위치 설정
+		theViewCube->SetTransformPersistence(aTrsfPers);
+
+		// * 뷰 큐브 내부 여백 
+		theViewCube->SetBoxFacetExtension(5.0);
+
+		// * 색상 넣기
+		theViewCube->SetBoxColor(Quantity_NOC_MEDIUMPURPLE2);
+
+		// #07. 뷰 큐브를 컨텍스트에 표시
+		myAISContext()->Display(theViewCube, Standard_True);
 	}
 
 	/// <summary>

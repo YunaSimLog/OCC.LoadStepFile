@@ -106,6 +106,9 @@ namespace OCC.LoadStepFile
 
             // * 하이라이트 색상 적용
             _occtProxy.SetHighlightStyle(23, 44, 120);
+
+            // * 뷰 큐브 그리기
+            _occtProxy.SetViweCube();
         }
 
         /// <summary>
