@@ -219,6 +219,33 @@ public:
 	}
 
 	/// <summary>
+	/// 화면 줌
+	/// </summary>
+	/// <param name="x">마우스 X 좌표</param>
+	/// <param name="y">마우스 Y 좌표</param>
+	/// <param name="delta">크기</param>
+	void Zoom(int x, int y, double delta)
+	{
+		if (!myView().IsNull())
+		{
+			// #01. 화면 크기 가져오기
+			int width, height;
+			myView()->Window()->Size(width, height);
+
+			// #02. 줌을 적용할 좌표 계산
+			int x1 = x + width * delta / 10000.0;
+			int y1 = y + height * delta / 10000.0;
+
+			// #03. 줌 시작 점을 설정한다.
+			myView()->StartZoomAtPoint(x, y);
+
+			// #04. 줌 적용
+			//  - StartZoomAtPoint() 메서드로 줌 시작점을 설정한 후, 줌을 적용한다.
+			myView()->ZoomAtPoint(x, y, x1, y1);
+		}
+	}
+
+	/// <summary>
 	/// Set Pan
 	/// </summary>
 	void Pan(int theX, int theY)

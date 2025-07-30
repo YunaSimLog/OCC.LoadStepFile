@@ -28,61 +28,6 @@ namespace OCC.LoadStepFile
         #region private
 
         /// <summary>
-        /// OCCTProxy 뷰어 초기화
-        /// </summary>
-        /// <returns></returns>
-        private bool InitilizeOCCTProxy()
-        {
-            bool ret = true;
-
-            // #01. OCCTProxy 뷰어 초기화
-            //  - 패널 영역을 OpenCASCADE로 사용할 것 이다.
-            ret &= _occtProxy.InitViewer(panel1.Handle);
-
-            if (!ret)
-            {
-                XtraMessageBox.Show("OpenCASCADE 뷰어 초기화에 실패하였습니다.", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            return ret;
-        }
-
-        private bool LoadSTEPFile(string filePath)
-        {
-            bool ret = true;
-
-            // #01. 파일 존재 여부 확인
-            ret &= File.Exists(filePath);
-
-            if (ret)
-            {
-                // #02. OCCTProxy의 TranslateModel을 이용하여 STEP 파일 부르기 수행
-                _occtProxy.ImportStep(filePath);
-
-                // #03. 전체 보기 뷰
-                _occtProxy.ZoomAllView();
-            }
-
-            return ret;
-        }
-
-        #endregion
-
-        #region public
-        /// <summary>
-        /// Form1 생성자
-        /// </summary>
-        public Form1()
-        {
-            // #01. Form 컨트롤 객체 초기화
-            InitializeComponent();
-
-            // #02. OpenCASCADE 를 사용하기 위한 OCCTProxy 객체 초기화
-            _occtProxy = new OCCTProxy();
-        }
-        #endregion
-
-        /// <summary>
         /// Form1 불러오기 이벤트
         /// </summary>
         /// <param name="sender"></param>
@@ -196,6 +141,20 @@ namespace OCC.LoadStepFile
             _occtProxy.MoveTo(e.X, e.Y);
         }
 
+        private void panel1_MouseWheel(object sender, MouseEventArgs e)
+        {
+            // * 마우스 확대 축소 방법 1 (마우스 커서를 따라 줌아웃) *******************************
+            _occtProxy.Zoom(e.X, e.Y, e.Delta);
+
+            // * 마우스 확대 축소 방법 2 (화면 가운데를 줌아웃) ***********************************
+            //int firstPosX = e.X;
+            //int secondPosX = e.X + e.Delta / 120 * 10; // 마우스 휠 스크롤에 따라 확대/축소 비율 조정
+            //int firstPosY = e.Y;
+            //int secondPosY = e.Y + e.Delta / 120 * 10; // 마우스 휠 스크롤에 따라 확대/축소 비율 조정
+
+            //_occtProxy.Zoom(firstPosX, firstPosY, secondPosX, secondPosY);
+        }
+
         private void btnAllSelect_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
             // * 모든 객체 선택
@@ -212,8 +171,69 @@ namespace OCC.LoadStepFile
             }
             else
             {
-                MessageBox.Show("선택된 것이 없는 상태","",MessageBoxButtons.OK,MessageBoxIcon.Error);
+                MessageBox.Show("선택된 것이 없는 상태", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        /// <summary>
+        /// OCCTProxy 뷰어 초기화
+        /// </summary>
+        /// <returns></returns>
+        private bool InitilizeOCCTProxy()
+        {
+            bool ret = true;
+
+            // #01. OCCTProxy 뷰어 초기화
+            //  - 패널 영역을 OpenCASCADE로 사용할 것 이다.
+            ret &= _occtProxy.InitViewer(panel1.Handle);
+
+            if (!ret)
+            {
+                XtraMessageBox.Show("OpenCASCADE 뷰어 초기화에 실패하였습니다.", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            return ret;
+        }
+
+        private bool LoadSTEPFile(string filePath)
+        {
+            bool ret = true;
+
+            // #01. 파일 존재 여부 확인
+            ret &= File.Exists(filePath);
+
+            if (ret)
+            {
+                // #02. OCCTProxy의 TranslateModel을 이용하여 STEP 파일 부르기 수행
+                _occtProxy.ImportStep(filePath);
+
+                // #03. 전체 보기 뷰
+                _occtProxy.ZoomAllView();
+            }
+
+            return ret;
+        }
+
+        #endregion
+
+        #region public
+        /// <summary>
+        /// Form1 생성자
+        /// </summary>
+        public Form1()
+        {
+            // #01. Form 컨트롤 객체 초기화
+            InitializeComponent();
+
+            // #02. 마우스 휠 이벤트 핸들러 등록 
+            panel1.MouseWheel += new MouseEventHandler(panel1_MouseWheel);
+
+            // #03. OpenCASCADE 를 사용하기 위한 OCCTProxy 객체 초기화
+            _occtProxy = new OCCTProxy();
+
+
+        }
+        #endregion
+
     }
 }
