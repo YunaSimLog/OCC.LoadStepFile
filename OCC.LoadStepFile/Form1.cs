@@ -215,6 +215,23 @@ namespace OCC.LoadStepFile
             //_occtProxy.Zoom(firstPosX, firstPosY, secondPosX, secondPosY);
         }
 
+        private void panel1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            // * 전체 보기
+            _occtProxy.ZoomAllView();
+        }
+
+        private void barEditBackColor_EditValueChanged(object sender, EventArgs e)
+        {
+            Color color = (Color)barEditBackColor.EditValue;
+            int r = color.R;
+            int g = color.G;
+            int b = color.B;
+
+            // * 배경 색상 변경
+            _occtProxy.SetBackgroundColor( r, g, b);
+        }
+
         private void btnAllSelect_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
             // * 모든 객체 선택
@@ -294,11 +311,5 @@ namespace OCC.LoadStepFile
 
         }
         #endregion
-
-        private void panel1_MouseDoubleClick(object sender, MouseEventArgs e)
-        {
-            // * 전체 보기
-            _occtProxy.ZoomAllView();
-        }
     }
 }

@@ -47,8 +47,11 @@
             this.barButtonItem2 = new DevExpress.XtraBars.BarButtonItem();
             this.ribbonControl1 = new DevExpress.XtraBars.Ribbon.RibbonControl();
             this.barButtonItem1 = new DevExpress.XtraBars.BarButtonItem();
+            this.barEditBackColor = new DevExpress.XtraBars.BarEditItem();
+            this.repositoryItemColorEdit1 = new DevExpress.XtraEditors.Repository.RepositoryItemColorEdit();
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemColorPickEdit1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ribbonControl1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.repositoryItemColorEdit1)).BeginInit();
             this.SuspendLayout();
             // 
             // panel1
@@ -109,6 +112,7 @@
             this.ribbonPageGroup3.ItemLinks.Add(this.btnShowWireMode);
             this.ribbonPageGroup3.ItemLinks.Add(this.btnAmbientOcclusion);
             this.ribbonPageGroup3.ItemLinks.Add(this.barEditColor);
+            this.ribbonPageGroup3.ItemLinks.Add(this.barEditBackColor);
             this.ribbonPageGroup3.Name = "ribbonPageGroup3";
             this.ribbonPageGroup3.Text = "표현 도구";
             // 
@@ -188,10 +192,11 @@
             this.btnAmbientOcclusion,
             this.barEditColor,
             this.btnAllSelect,
-            this.barButtonItem2});
+            this.barButtonItem2,
+            this.barEditBackColor});
             this.ribbonControl1.Location = new System.Drawing.Point(0, 0);
             this.ribbonControl1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.ribbonControl1.MaxItemId = 10;
+            this.ribbonControl1.MaxItemId = 11;
             this.ribbonControl1.Name = "ribbonControl1";
             this.ribbonControl1.OptionsMenuMinWidth = 385;
             this.ribbonControl1.PageCategories.AddRange(new DevExpress.XtraBars.Ribbon.RibbonPageCategory[] {
@@ -199,7 +204,8 @@
             this.ribbonControl1.Pages.AddRange(new DevExpress.XtraBars.Ribbon.RibbonPage[] {
             this.ribbonPage1});
             this.ribbonControl1.RepositoryItems.AddRange(new DevExpress.XtraEditors.Repository.RepositoryItem[] {
-            this.repositoryItemColorPickEdit1});
+            this.repositoryItemColorPickEdit1,
+            this.repositoryItemColorEdit1});
             this.ribbonControl1.Size = new System.Drawing.Size(1073, 150);
             // 
             // barButtonItem1
@@ -207,6 +213,21 @@
             this.barButtonItem1.Caption = "음영 보기1";
             this.barButtonItem1.Id = 2;
             this.barButtonItem1.Name = "barButtonItem1";
+            // 
+            // barEditBackColor
+            // 
+            this.barEditBackColor.Caption = "배경 색상 변경";
+            this.barEditBackColor.Edit = this.repositoryItemColorEdit1;
+            this.barEditBackColor.Id = 10;
+            this.barEditBackColor.Name = "barEditBackColor";
+            this.barEditBackColor.EditValueChanged += new System.EventHandler(this.barEditBackColor_EditValueChanged);
+            // 
+            // repositoryItemColorEdit1
+            // 
+            this.repositoryItemColorEdit1.AutoHeight = false;
+            this.repositoryItemColorEdit1.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)});
+            this.repositoryItemColorEdit1.Name = "repositoryItemColorEdit1";
             // 
             // Form1
             // 
@@ -222,6 +243,7 @@
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemColorPickEdit1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ribbonControl1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.repositoryItemColorEdit1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -246,6 +268,8 @@
         private DevExpress.XtraEditors.Repository.RepositoryItemColorPickEdit repositoryItemColorPickEdit1;
         private DevExpress.XtraBars.BarButtonItem btnAllSelect;
         private DevExpress.XtraBars.BarButtonItem barButtonItem2;
+        private DevExpress.XtraBars.BarEditItem barEditBackColor;
+        private DevExpress.XtraEditors.Repository.RepositoryItemColorEdit repositoryItemColorEdit1;
     }
 }
 
