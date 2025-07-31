@@ -295,5 +295,10 @@ namespace OCC.LoadStepFile
         }
         #endregion
 
+        private void panel1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            // * 전체 보기
+            _occtProxy.ZoomAllView();
+        }
     }
 }
