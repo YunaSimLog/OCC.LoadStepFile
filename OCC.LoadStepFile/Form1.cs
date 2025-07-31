@@ -22,6 +22,20 @@ namespace OCC.LoadStepFile
         /// </summary>
         OCCTProxy _occtProxy;
 
+        /// <summary>
+        /// 드래깅 모드 상태 여부
+        /// </summary>
+        bool _isDraggingMode = false;
+
+        /// <summary>
+        /// 마우스 위치 X
+        /// </summary>
+        int _mousePosX;
+
+        /// <summary>
+        /// 마우스 위치 Y
+        /// </summary>
+        int _mousePosY;
         // --------------------------------------------------------------------------------------------------------------
         #endregion
 
@@ -133,12 +147,58 @@ namespace OCC.LoadStepFile
 
         private void panel1_MouseUp(object sender, MouseEventArgs e)
         {
+            // * 모델 선택
             _occtProxy.Select();
+
+            // * 드래깅 모드 종료
+            _isDraggingMode = false;
         }
 
         private void panel1_MouseMove(object sender, MouseEventArgs e)
         {
+            // * 마우스 호버되면 하이라이트 되도록
             _occtProxy.MoveTo(e.X, e.Y);
+
+            // * 드래깅 모드일 때 수행
+            if (_isDraggingMode)
+            {
+                // * 마우스 가운데 버튼 누른 상태로 이동할 때
+                if (e.Button == System.Windows.Forms.MouseButtons.Right)
+                {
+                    // * 회전 수행
+                    _occtProxy.Rotation(e.X, e.Y);
+                }
+                else if (e.Button == System.Windows.Forms.MouseButtons.Middle)
+                {
+                    // * 현재 마우스 위치 기준으로 마지막 저장된 위치 간 크기 구하기
+                    var deltaX = e.X - _mousePosX;
+                    var deltaY = _mousePosY - e.Y;
+
+                    // * 팬 이동 수행
+                    _occtProxy.Pan(deltaX, deltaY);
+                }
+            }
+
+            // * 현재 마우스 위치 값 업데이트
+            _mousePosX = e.X;
+            _mousePosY = e.Y;
+        }
+
+        private void panel1_MouseDown(object sender, MouseEventArgs e)
+        {
+            // #01. 드래깅 모드 활성
+            _isDraggingMode = true;
+
+            // #02. 마우스 위치 정보 저장 
+            _mousePosX = e.X;
+            _mousePosY = e.Y;
+
+            // #03. 마우스 우클릭 버튼 눌렀을 때 회전될 수 있도록
+            if (e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                // * 회전 시작 위치 현재 마우스 위치 값으로 설정
+                _occtProxy.StartRotation(e.X, e.Y);
+            }
         }
 
         private void panel1_MouseWheel(object sender, MouseEventArgs e)
