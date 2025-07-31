@@ -812,6 +812,22 @@ public:
 		}
 	}
 
+	void SetBackgroundGradientColor(int topRed, int topGreen, int topBlue, int downRed, int downGreen, int downBlue)
+	{
+		if (!myView().IsNull())
+		{
+			// * 색상 만들기
+			Quantity_Color topColor = Quantity_Color(topRed / 255., topGreen / 255., topBlue / 255., Quantity_TOC_RGB);
+			Quantity_Color bottomColor = Quantity_Color(downRed / 255., downGreen / 255., downBlue / 255., Quantity_TOC_RGB);
+
+			// * 그라데이션 색상 적용
+			myView()->SetBgGradientColors(topColor, bottomColor, Aspect_GFM_VER); // 수직 그라데이션
+
+			// * 뷰 업데이트
+			myView()->Update();
+		}
+	}
+
 	/// <summary>
 	/// Erase objects
 	/// </summary>

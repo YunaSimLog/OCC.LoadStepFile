@@ -229,15 +229,56 @@ namespace OCC.LoadStepFile
             int b = color.B;
 
             // * 배경 색상 변경
-            _occtProxy.SetBackgroundColor( r, g, b);
+            _occtProxy.SetBackgroundColor(r, g, b);
         }
 
-        private void btnAllSelect_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
+        private void chkUseGradient_CheckedChanged(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
-            // * 모든 객체 선택
-            _occtProxy.SelectAllObject();
+            if (chkUseGradient.Checked)
+            {
+                // * 상단 컬러
+                Color topColor = barEditGradientBackColorTop.EditValue == null ? Color.White : (Color)barEditGradientBackColorTop.EditValue;
+                // * 하단 컬러
+                Color downColor = barEditGradientBackColorDown.EditValue == null ? Color.CornflowerBlue : (Color)barEditGradientBackColorDown.EditValue;
+
+                // * 그라데이션 배경색 적용
+                _occtProxy.SetBackgroundGradientColor(topColor.R, topColor.G, topColor.B, downColor.R, downColor.G, downColor.B);
+            }
+            else
+            {
+                Color color = (Color)barEditBackColor.EditValue;
+                _occtProxy.SetBackgroundColor(color.R, color.G, color.B);
+            }
+        }
+        
+        private void barEditGradientBackColorTop_EditValueChanged(object sender, EventArgs e)
+        {
+            if (chkUseGradient.Checked)
+            {
+                // * 상단 컬러
+                Color topColor = barEditGradientBackColorTop.EditValue == null ? Color.White : (Color)barEditGradientBackColorTop.EditValue;
+                // * 하단 컬러
+                Color downColor = barEditGradientBackColorDown.EditValue == null ? Color.CornflowerBlue : (Color)barEditGradientBackColorDown.EditValue;
+
+                // * 그라데이션 배경색 적용
+                _occtProxy.SetBackgroundGradientColor(topColor.R, topColor.G, topColor.B, downColor.R, downColor.G, downColor.B);
+            }
         }
 
+        private void barEditGradientBackColorDown_EditValueChanged(object sender, EventArgs e)
+        {
+            if(chkUseGradient.Checked)
+            {
+                // * 상단 컬러
+                Color topColor = barEditGradientBackColorTop.EditValue == null ? Color.White : (Color)barEditGradientBackColorTop.EditValue;
+                // * 하단 컬러
+                Color downColor = barEditGradientBackColorDown.EditValue == null ? Color.CornflowerBlue : (Color)barEditGradientBackColorDown.EditValue;
+
+                // * 그라데이션 배경색 적용
+                _occtProxy.SetBackgroundGradientColor(topColor.R, topColor.G, topColor.B, downColor.R, downColor.G, downColor.B);
+            }
+        }
+        
         private void barButtonItem2_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
             bool selectd = _occtProxy.IsObjectSelected();
@@ -251,7 +292,13 @@ namespace OCC.LoadStepFile
                 MessageBox.Show("선택된 것이 없는 상태", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
+        
+        private void btnAllSelect_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
+        {
+            // * 모든 객체 선택
+            _occtProxy.SelectAllObject();
+        }
+        
         /// <summary>
         /// OCCTProxy 뷰어 초기화
         /// </summary>
@@ -310,6 +357,7 @@ namespace OCC.LoadStepFile
 
 
         }
+
         #endregion
     }
 }
