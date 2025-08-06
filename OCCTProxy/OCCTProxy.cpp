@@ -39,9 +39,27 @@
 #include <Graphic3d_AspectText3d.hxx>
 #include <Quantity_Color.hxx>
 
-// 엠비언트 오클루젼
-#include <Graphic3d_RenderingParams.hxx>
-#include <Graphic3d_RenderingMode.hxx>
+// 포인트 생성
+// 기본 형상
+#include <gp_Pnt.hxx>
+#include <AIS_Point.hxx>
+#include <TopoDS_Vertex.hxx>
+#include  <Geom_CartesianPoint.hxx>
+
+// 형상 생성 도구
+#include <BRepBuilderAPI_MakeVertex.hxx>
+#include <BRepPrimAPI_MakeSphere.hxx>
+
+// AIS 시각화 관련
+#include <AIS_Shape.hxx>
+#include <Prs3d_PointAspect.hxx>
+#include <AIS_InteractiveContext.hxx>
+
+// 색상 관련
+#include <Quantity_Color.hxx>
+
+// 기타 OpenCascade 핸들 타입
+#include <Standard_Handle.hxx>
 
 #include <vcclr.h>
 
@@ -58,6 +76,12 @@
 #pragma comment(lib, "TKDESTL.lib")
 #pragma comment(lib, "TKDEVRML.lib")
 #pragma comment(lib, "TKLCAF.lib")
+#pragma comment(lib, "TKG3d.lib")
+#pragma comment(lib, "TKTopAlgo.lib")
+#pragma comment(lib, "TKGeomBase.lib")
+#pragma comment(lib, "TKGeomAlgo.lib")
+#pragma comment(lib, "TKPrim.lib")
+#pragma comment(lib, "TKShHealing.lib")
 
 //! Auxiliary tool for converting C# string into UTF-8 string.
 static TCollection_AsciiString toAsciiString(String^ theString)
@@ -1314,6 +1338,66 @@ public:
 
 		// 렌더링 갱신
 		myView()->Redraw();
+	}
+
+	/// <summary>
+	/// 점 삽입 (확대/축소에 영향 받지 않음)
+	/// </summary>
+	/// <param name="x">좌표X</param>
+	/// <param name="y">좌표Y</param>
+	/// <param name="z">좌표Z</param>
+	/// <param name="pixelSize">픽셀 사이즈 (최대 7까지 입력)</param>
+	void InsertPoint(double x, double y, double z, double pixelSize)
+	{
+		if (myView().IsNull() || myAISContext().IsNull())
+			return;
+
+		// #01. 점 좌표 생성
+		gp_Pnt point(x, y, z);
+		Handle(AIS_Point) aPoint = new AIS_Point(new Geom_CartesianPoint(point));
+
+		// #02. 색상 설정 
+		Quantity_Color color(Quantity_NOC_RED);
+
+		// #03. 점 정보 설정
+		// * 픽셀 사이즈는 최대가 7로 고정되어 있다. 그 이상 값을 넣어도 사이즈는 동일하다.
+		Handle(Prs3d_Drawer) drawer = new Prs3d_Drawer();
+		drawer->SetPointAspect(new Prs3d_PointAspect(Aspect_TOM_O, color, pixelSize));
+
+		// #04. drawer를 AIS_Point에 설정
+		aPoint->SetAttributes(drawer);
+
+		// #05. Context에 등록 및 표시
+		myAISContext()->Display(aPoint, Standard_True);
+	}
+
+	/// <summary>
+	/// 점(구) 삽입 (확대/축소 영향 받음)
+	/// </summary>
+	/// <param name="x">좌표X</param>
+	/// <param name="y">좌표Y</param>
+	/// <param name="z">좌표Z</param>
+	/// <param name="radius">구 반지름</param>
+	void InsertPointAsSphere(double x, double y, double z, double radius)
+	{
+		if (myView().IsNull() || myAISContext().IsNull())
+			return;
+
+		// #01. 점 위치
+		gp_Pnt center(x, y, z);
+
+		// #02. 구 형상 생성 (작은 반지름)
+		TopoDS_Shape sphere = BRepPrimAPI_MakeSphere(center, radius);
+
+		// #03. AIS_Shape로 생성
+		Handle(AIS_Shape) aShape = new AIS_Shape(sphere);
+
+		// #04. 색상 설정
+		aShape->SetColor(Quantity_NOC_RED); 
+		aShape->SetDisplayMode(AIS_Shaded);
+
+		// #05. Context에 표시
+		myAISContext()->Display(aShape, Standard_True);
 	}
 
 	/// <summary>

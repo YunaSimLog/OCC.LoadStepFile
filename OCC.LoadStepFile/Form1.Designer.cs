@@ -53,6 +53,8 @@
             this.ribbonPageGroup4 = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
             this.btnAllSelect = new DevExpress.XtraBars.BarButtonItem();
             this.barButtonItem2 = new DevExpress.XtraBars.BarButtonItem();
+            this.ribbonPageGroup5 = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
+            this.btnAddSensor = new DevExpress.XtraBars.BarButtonItem();
             this.barToggleSwitchItem1 = new DevExpress.XtraBars.BarToggleSwitchItem();
             this.ribbonControl1 = new DevExpress.XtraBars.Ribbon.RibbonControl();
             this.barButtonItem1 = new DevExpress.XtraBars.BarButtonItem();
@@ -97,7 +99,8 @@
             this.ribbonPage1.Groups.AddRange(new DevExpress.XtraBars.Ribbon.RibbonPageGroup[] {
             this.ribbonPageGroup1,
             this.ribbonPageGroup3,
-            this.ribbonPageGroup4});
+            this.ribbonPageGroup4,
+            this.ribbonPageGroup5});
             this.ribbonPage1.Name = "ribbonPage1";
             this.ribbonPage1.Text = "ribbonPage1";
             // 
@@ -249,6 +252,21 @@
             this.barButtonItem2.Name = "barButtonItem2";
             this.barButtonItem2.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.barButtonItem2_ItemClick);
             // 
+            // ribbonPageGroup5
+            // 
+            this.ribbonPageGroup5.ItemLinks.Add(this.btnAddSensor);
+            this.ribbonPageGroup5.Name = "ribbonPageGroup5";
+            this.ribbonPageGroup5.Text = "모델 도구";
+            // 
+            // btnAddSensor
+            // 
+            this.btnAddSensor.Caption = "센서 삽입";
+            this.btnAddSensor.Id = 17;
+            this.btnAddSensor.ImageOptions.SvgImage = ((DevExpress.Utils.Svg.SvgImage)(resources.GetObject("btnAddSensor.ImageOptions.SvgImage")));
+            this.btnAddSensor.Name = "btnAddSensor";
+            this.btnAddSensor.RibbonStyle = DevExpress.XtraBars.Ribbon.RibbonItemStyles.Large;
+            this.btnAddSensor.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.btnAddSensor_ItemClick);
+            // 
             // barToggleSwitchItem1
             // 
             this.barToggleSwitchItem1.Caption = "그라데이션 사용";
@@ -276,10 +294,11 @@
             this.barStaticItem1,
             this.barToggleSwitchItem1,
             this.chkUseGradient,
-            this.barEditGradientBackColorDown});
+            this.barEditGradientBackColorDown,
+            this.btnAddSensor});
             this.ribbonControl1.Location = new System.Drawing.Point(0, 0);
             this.ribbonControl1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.ribbonControl1.MaxItemId = 17;
+            this.ribbonControl1.MaxItemId = 18;
             this.ribbonControl1.Name = "ribbonControl1";
             this.ribbonControl1.OptionsMenuMinWidth = 385;
             this.ribbonControl1.PageCategories.AddRange(new DevExpress.XtraBars.Ribbon.RibbonPageCategory[] {
@@ -349,6 +368,8 @@
         private DevExpress.XtraBars.BarCheckItem chkUseGradient;
         private DevExpress.XtraBars.BarEditItem barEditGradientBackColorDown;
         private DevExpress.XtraEditors.Repository.RepositoryItemColorEdit repositoryItemColorEdit2;
+        private DevExpress.XtraBars.Ribbon.RibbonPageGroup ribbonPageGroup5;
+        private DevExpress.XtraBars.BarButtonItem btnAddSensor;
     }
 }
 

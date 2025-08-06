@@ -54,8 +54,8 @@ namespace OCC.LoadStepFile
             // * STEP 파일 경로
             string stepFilePath = "../../../Sample/linkrods.step";
 
-            // #01. STEP 파일 불러오기 수행
-            LoadSTEPFile(stepFilePath);
+            //// #01. STEP 파일 불러오기 수행
+            //LoadSTEPFile(stepFilePath);
 
             // * 쉐이딩 모드로 설정
             _occtProxy.SetShadingMode();
@@ -250,7 +250,7 @@ namespace OCC.LoadStepFile
                 _occtProxy.SetBackgroundColor(color.R, color.G, color.B);
             }
         }
-        
+
         private void barEditGradientBackColorTop_EditValueChanged(object sender, EventArgs e)
         {
             if (chkUseGradient.Checked)
@@ -267,7 +267,7 @@ namespace OCC.LoadStepFile
 
         private void barEditGradientBackColorDown_EditValueChanged(object sender, EventArgs e)
         {
-            if(chkUseGradient.Checked)
+            if (chkUseGradient.Checked)
             {
                 // * 상단 컬러
                 Color topColor = barEditGradientBackColorTop.EditValue == null ? Color.White : (Color)barEditGradientBackColorTop.EditValue;
@@ -278,7 +278,7 @@ namespace OCC.LoadStepFile
                 _occtProxy.SetBackgroundGradientColor(topColor.R, topColor.G, topColor.B, downColor.R, downColor.G, downColor.B);
             }
         }
-        
+
         private void barButtonItem2_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
             bool selectd = _occtProxy.IsObjectSelected();
@@ -292,13 +292,13 @@ namespace OCC.LoadStepFile
                 MessageBox.Show("선택된 것이 없는 상태", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        
+
         private void btnAllSelect_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
             // * 모든 객체 선택
             _occtProxy.SelectAllObject();
         }
-        
+
         /// <summary>
         /// OCCTProxy 뷰어 초기화
         /// </summary>
@@ -336,6 +336,29 @@ namespace OCC.LoadStepFile
             }
 
             return ret;
+        }
+
+        private void btnAddSensor_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
+        {
+            bool ret = true;
+
+            // #01. 센서 추가 Form 띄우기
+            var addSensor = new AddSensor();
+            var dialogResult = addSensor.ShowDialog();
+
+            ret &= (dialogResult == DialogResult.OK);
+
+            if (ret)
+            {
+                // #02. 입력 파라미터 가져오기
+                double x = addSensor.X;
+                double y = addSensor.Y;
+                double z = addSensor.Z;
+                double size = addSensor.Size;
+
+                // #03. 점 삽입
+                _occtProxy.InsertPointAsSphere(x, y, z, size);
+            }
         }
 
         #endregion
