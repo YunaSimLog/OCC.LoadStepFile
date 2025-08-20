@@ -52,10 +52,11 @@ namespace OCC.LoadStepFile
             InitilizeOCCTProxy();
 
             // * STEP 파일 경로
-            string stepFilePath = "../../../Sample/linkrods.step";
+            //string stepFilePath = "../../../Sample/linkrods.step";
+            string stepFilePath = "../../../Sample/AssyModel.STEP";
 
-            //// #01. STEP 파일 불러오기 수행
-            //LoadSTEPFile(stepFilePath);
+            // #01. STEP 파일 불러오기 수행
+            LoadSTEPFile(stepFilePath);
 
             // * 쉐이딩 모드로 설정
             _occtProxy.SetShadingMode();
@@ -149,6 +150,21 @@ namespace OCC.LoadStepFile
         {
             // * 모델 선택
             _occtProxy.Select();
+
+            // * 센서 클릭 삽입 모드 선택 시 수행
+            if (tgInsertClickSensor.Checked)
+            {
+                double x = 0.0, y = 0.0, z = 0.0;
+                
+                // * 클릭한 위치의 좌표 가져오기
+                if (_occtProxy.GetPickPoint(ref x, ref y, ref z))
+                {
+                    Debug.Print($"{x}, {y}, {z}");
+                    
+                    // * 점 삽입
+                    _occtProxy.InsertPointAsSphere(x, y, z, 2);
+                }
+            }
 
             // * 드래깅 모드 종료
             _isDraggingMode = false;

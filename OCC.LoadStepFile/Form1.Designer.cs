@@ -58,6 +58,7 @@
             this.barToggleSwitchItem1 = new DevExpress.XtraBars.BarToggleSwitchItem();
             this.ribbonControl1 = new DevExpress.XtraBars.Ribbon.RibbonControl();
             this.barButtonItem1 = new DevExpress.XtraBars.BarButtonItem();
+            this.tgInsertClickSensor = new DevExpress.XtraBars.BarToggleSwitchItem();
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemColorPickEdit1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemColorEdit1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemColorPickEdit2)).BeginInit();
@@ -70,7 +71,7 @@
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(0, 150);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(1071, 599);
+            this.panel1.Size = new System.Drawing.Size(1276, 599);
             this.panel1.TabIndex = 1;
             this.panel1.SizeChanged += new System.EventHandler(this.panel1_SizeChanged);
             this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
@@ -138,6 +139,7 @@
             this.btnShowShadingMode.Id = 3;
             this.btnShowShadingMode.ImageOptions.SvgImage = ((DevExpress.Utils.Svg.SvgImage)(resources.GetObject("btnShowShadingMode.ImageOptions.SvgImage")));
             this.btnShowShadingMode.Name = "btnShowShadingMode";
+            this.btnShowShadingMode.RibbonStyle = DevExpress.XtraBars.Ribbon.RibbonItemStyles.SmallWithText;
             this.btnShowShadingMode.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.btnShowShadingMode_ItemClick);
             // 
             // btnShowWireMode
@@ -146,6 +148,7 @@
             this.btnShowWireMode.Id = 4;
             this.btnShowWireMode.ImageOptions.SvgImage = ((DevExpress.Utils.Svg.SvgImage)(resources.GetObject("btnShowWireMode.ImageOptions.SvgImage")));
             this.btnShowWireMode.Name = "btnShowWireMode";
+            this.btnShowWireMode.RibbonStyle = DevExpress.XtraBars.Ribbon.RibbonItemStyles.SmallWithText;
             this.btnShowWireMode.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.btnShowWireMode_ItemClick);
             // 
             // btnAmbientOcclusion
@@ -154,6 +157,7 @@
             this.btnAmbientOcclusion.Id = 5;
             this.btnAmbientOcclusion.ImageOptions.SvgImage = ((DevExpress.Utils.Svg.SvgImage)(resources.GetObject("btnAmbientOcclusion.ImageOptions.SvgImage")));
             this.btnAmbientOcclusion.Name = "btnAmbientOcclusion";
+            this.btnAmbientOcclusion.RibbonStyle = DevExpress.XtraBars.Ribbon.RibbonItemStyles.SmallWithText;
             this.btnAmbientOcclusion.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.btnAmbientOcclusion_ItemClick);
             // 
             // barEditColor
@@ -255,6 +259,7 @@
             // ribbonPageGroup5
             // 
             this.ribbonPageGroup5.ItemLinks.Add(this.btnAddSensor);
+            this.ribbonPageGroup5.ItemLinks.Add(this.tgInsertClickSensor);
             this.ribbonPageGroup5.Name = "ribbonPageGroup5";
             this.ribbonPageGroup5.Text = "모델 도구";
             // 
@@ -295,10 +300,11 @@
             this.barToggleSwitchItem1,
             this.chkUseGradient,
             this.barEditGradientBackColorDown,
-            this.btnAddSensor});
+            this.btnAddSensor,
+            this.tgInsertClickSensor});
             this.ribbonControl1.Location = new System.Drawing.Point(0, 0);
             this.ribbonControl1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.ribbonControl1.MaxItemId = 18;
+            this.ribbonControl1.MaxItemId = 20;
             this.ribbonControl1.Name = "ribbonControl1";
             this.ribbonControl1.OptionsMenuMinWidth = 385;
             this.ribbonControl1.PageCategories.AddRange(new DevExpress.XtraBars.Ribbon.RibbonPageCategory[] {
@@ -310,7 +316,7 @@
             this.repositoryItemColorEdit1,
             this.repositoryItemColorPickEdit2,
             this.repositoryItemColorEdit2});
-            this.ribbonControl1.Size = new System.Drawing.Size(1071, 150);
+            this.ribbonControl1.Size = new System.Drawing.Size(1276, 150);
             // 
             // barButtonItem1
             // 
@@ -318,11 +324,19 @@
             this.barButtonItem1.Id = 2;
             this.barButtonItem1.Name = "barButtonItem1";
             // 
+            // tgInsertClickSensor
+            // 
+            this.tgInsertClickSensor.BindableChecked = true;
+            this.tgInsertClickSensor.Caption = "면 클릭 센 삽입 모드";
+            this.tgInsertClickSensor.Checked = true;
+            this.tgInsertClickSensor.Id = 19;
+            this.tgInsertClickSensor.Name = "tgInsertClickSensor";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1071, 749);
+            this.ClientSize = new System.Drawing.Size(1276, 749);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.ribbonControl1);
             this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -370,6 +384,7 @@
         private DevExpress.XtraEditors.Repository.RepositoryItemColorEdit repositoryItemColorEdit2;
         private DevExpress.XtraBars.Ribbon.RibbonPageGroup ribbonPageGroup5;
         private DevExpress.XtraBars.BarButtonItem btnAddSensor;
+        private DevExpress.XtraBars.BarToggleSwitchItem tgInsertClickSensor;
     }
 }
 

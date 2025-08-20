@@ -12,6 +12,7 @@
 #include <AIS_InteractiveContext.hxx>
 #include <AIS_Shape.hxx>
 // topology
+#include <TopoDS.hxx>
 #include <TopoDS_Shape.hxx>
 #include <TopoDS_Compound.hxx>
 // brep tools
@@ -60,6 +61,9 @@
 
 // 기타 OpenCascade 핸들 타입
 #include <Standard_Handle.hxx>
+
+// 화면 클릭된 곡면에 수직된 점 정보 가져오기 위함
+#include <GeomAPI_ProjectPointOnSurf.hxx>
 
 #include <vcclr.h>
 
@@ -435,7 +439,7 @@ public:
 				Graphic3d_Vec2i(100, 100));	// 오프셋 되는 위치 
 
 		// #07. 뷰 큐브 위치 설정
-		theViewCube->SetTransformPersistence(aTrsfPers);
+		//theViewCube->SetTransformPersistence(aTrsfPers);
 
 		// * 뷰 큐브 내부 여백 
 		theViewCube->SetBoxFacetExtension(5.0);
@@ -1035,7 +1039,7 @@ public:
 		return true;
 	}
 
-	/// <summary>
+	/*/// <summary>
    /// Import Step file
    /// </summary>
    /// <param name="theFileName">Name of import file</param>
@@ -1072,6 +1076,65 @@ public:
 			return false;
 		}
 
+		return true;
+	}*/
+
+	/// <summary>
+	///  STEP 파일 불러오기
+	/// </summary>
+	/// <param name="theFileName"></param>
+	/// <returns></returns>
+	bool ImportStep(String^ theFileName)
+	{
+		// * 파일 경로를 OCCT에서 인식 가능한 문자열로 생성
+		const TCollection_AsciiString aFilename = toAsciiString(theFileName);
+
+		// * STEP 파일 읽기 전용 객체 초기화
+		STEPControl_Reader aReader;
+		// * STEP 파일 읽기
+		IFSelect_ReturnStatus aStatus = aReader.ReadFile(aFilename.ToCString());
+		// * STEP 파일 읽기 성공 여부 판단
+		if (aStatus != IFSelect_RetDone)
+			return false;
+
+		// * 파일 로딩 과정에서 발생한 오류/경고를 출력
+		aReader.PrintCheckLoad(false, IFSelect_ItemsByEntity);
+
+		// * STEP 파일에서는 여러개의 Root 엔티티가 존재할 수 있어, Root 수 가져오기
+		int aNbRoot = aReader.NbRootsForTransfer();
+		// * 변환 과정시 발생한 체크 메시지 출력
+		aReader.PrintCheckTransfer(false, IFSelect_ItemsByEntity);
+		// * Root 수 만큼 순회하며 변환
+		for (Standard_Integer n = 1; n <= aNbRoot; n++)
+		{
+			// * 변환 실패할 경우 continue
+			if (!aReader.TransferRoot(n))
+			{
+				continue;
+			}
+
+			// * 변환된 결과에서 Shape 개수 가져오기
+			int aNbShap = aReader.NbShapes();
+
+			// Shape 수 만큼 순회
+			for (int i = 1; i <= aNbShap; i++)
+			{
+				// * Shape 가져오기
+				TopoDS_Shape aShape = aReader.Shape(i);
+
+				// * OpenCasCade에서 표시 가능한 객체인 AIS_Shape으로 변환
+				Handle(AIS_Shape) aisShape = new AIS_Shape(aShape);
+
+				// * Viewer 에 표시
+				myAISContext()->Display(aisShape, Standard_False);
+
+				// * 선택 모드 활성화 (Face 선택 가능)
+				myAISContext()->Activate(aisShape, AIS_Shape::SelectionMode(TopAbs_FACE));
+			}
+		}
+
+		// * 모든 Shape이 표시된 후 뷰어 갱신
+		myAISContext()->UpdateCurrentViewer();
 		return true;
 	}
 
@@ -1393,11 +1456,38 @@ public:
 		Handle(AIS_Shape) aShape = new AIS_Shape(sphere);
 
 		// #04. 색상 설정
-		aShape->SetColor(Quantity_NOC_RED); 
+		aShape->SetColor(Quantity_NOC_GREENYELLOW);
 		aShape->SetDisplayMode(AIS_Shaded);
 
 		// #05. Context에 표시
 		myAISContext()->Display(aShape, Standard_True);
+	}
+
+	/// <summary>
+	/// 선택 포인트 가져오기
+	/// </summary>
+	/// <param name="x"></param>
+	/// <param name="y"></param>
+	/// <param name="z"></param>
+	/// <returns></returns>
+	bool GetPickPoint(double% x, double% y, double% z)
+	{
+		// * 클릭된 Shape이 있는지 확인
+		if (myAISContext()->HasDetectedShape())
+		{
+			// * 첫 번째 선택된 점의 3D 좌표를 반환
+			//  - MainSelector() = 선택 관리 객체.
+			//  - PickedPoint(1) = 첫 번째 선택된 점의 3D 좌표를 반환. (gp_Pnt 타입)
+			gp_Pnt pickedPoint = myAISContext()->MainSelector()->PickedPoint(1);
+
+			x = pickedPoint.X();
+			y = pickedPoint.Y();
+			z = pickedPoint.Z();
+
+			return  true;
+		}
+
+		return false;
 	}
 
 	/// <summary>
@@ -1418,3 +1508,4 @@ private:
 	NCollection_Haft<Handle(AIS_InteractiveContext)> myAISContext;
 	NCollection_Haft<Handle(OpenGl_GraphicDriver)>   myGraphicDriver;
 };
+
