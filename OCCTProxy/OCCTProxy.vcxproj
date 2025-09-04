@@ -197,7 +197,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ModelShape.cpp" />
     <ClCompile Include="OCCTProxy.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ModelShape.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

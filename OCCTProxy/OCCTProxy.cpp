@@ -18,19 +18,9 @@
 // brep tools
 #include <BRep_Builder.hxx>
 #include <BRepTools.hxx>
-// iges I/E
-#include <IGESControl_Reader.hxx>
-#include <IGESControl_Controller.hxx>
-#include <IGESControl_Writer.hxx>
-#include <IFSelect_ReturnStatus.hxx>
-#include <Interface_Static.hxx>
 // step I/E
 #include <STEPControl_Reader.hxx>
 #include <STEPControl_Writer.hxx>
-// for stl export
-#include <StlAPI_Writer.hxx>
-// for vrml export
-#include <VrmlAPI_Writer.hxx>
 // wrapper of pure C++ classes to ref classes
 #include <NCollection_Haft.h>
 
@@ -65,28 +55,119 @@
 // 화면 클릭된 곡면에 수직된 점 정보 가져오기 위함
 #include <GeomAPI_ProjectPointOnSurf.hxx>
 
+// 사각형 와이어 생성을 위함.
+#include  <Standard.hxx>
+#include  <Standard_DefineAlloc.hxx>
+#include  <Standard_Handle.hxx>
+#include  <TopoDS_Shape.hxx>
+#include  <TopoDS_Compound.hxx>
+#include  <TopTools_HSequenceOfShape.hxx>
+#include  <Standard_Integer.hxx>
+#include  <TopoDS_Wire.hxx>
+#include  <BRepBuilderAPI_MakeEdge.hxx>
+#include  <BRepBuilderAPI_MakeWire.hxx>
+#include  <BRepProj_Projection.hxx>
+#include  <BRepBuilderAPI_MakeFace.hxx>
+
+// 가장 가까운 면 찾기
+#include <TopoDS_Shape.hxx>
+#include <TopoDS_Face.hxx>
+#include <TopExp_Explorer.hxx>
+#include <BRepExtrema_ExtPF.hxx>
+#include <gp_Pnt.hxx>
+
 #include <vcclr.h>
+#include <GeomLProp_SLProps.hxx>
+
+#include "ModelShape.h"
 
 // list of required OCCT libraries
-#pragma comment(lib, "TKernel.lib")
-#pragma comment(lib, "TKMath.lib")
-#pragma comment(lib, "TKBRep.lib")
-#pragma comment(lib, "TKXSBase.lib")
-#pragma comment(lib, "TKService.lib")
-#pragma comment(lib, "TKV3d.lib")
-#pragma comment(lib, "TKOpenGl.lib")
-#pragma comment(lib, "TKDEIGES.lib")
-#pragma comment(lib, "TKDESTEP.lib")
-#pragma comment(lib, "TKDESTL.lib")
-#pragma comment(lib, "TKDEVRML.lib")
-#pragma comment(lib, "TKLCAF.lib")
-#pragma comment(lib, "TKG3d.lib")
-#pragma comment(lib, "TKTopAlgo.lib")
-#pragma comment(lib, "TKGeomBase.lib")
-#pragma comment(lib, "TKGeomAlgo.lib")
-#pragma comment(lib, "TKPrim.lib")
-#pragma comment(lib, "TKShHealing.lib")
+#pragma comment(lib, "TKernel.lib"            )
+#pragma comment(lib, "TKMath.lib"             )
+#pragma comment(lib, "TKXSBase.lib"           )
+#pragma comment(lib, "TKService.lib"          )
+#pragma comment(lib, "TKV3d.lib"              )
+#pragma comment(lib, "TKBool.lib"             )
+#pragma comment(lib, "TKBRep.lib"             )
+#pragma comment(lib, "TKDESTEP.lib"           )
+#pragma comment(lib, "TKG2d.lib"              )
+#pragma comment(lib, "TKG3d.lib"              )
+#pragma comment(lib, "TKGeomAlgo.lib"         )
+#pragma comment(lib, "TKGeomBase.lib"         )
+#pragma comment(lib, "TKMesh.lib"             )
+#pragma comment(lib, "TKPrim.lib"             )
+#pragma comment(lib, "TKTObj.lib"             )
+#pragma comment(lib, "TKTopAlgo.lib"          )
+#pragma comment(lib, "TKView.lib"             )
+#pragma comment(lib, "TKShHealing.lib"        )
+#pragma comment(lib, "TKOpenGl.lib"           )
 
+//#pragma comment(lib, "TKBin.lib"			    )
+//#pragma comment(lib, "TKBinL.lib"             )
+//#pragma comment(lib, "TKBinTObj.lib"          )
+//#pragma comment(lib, "TKBinXCAF.lib"          )
+//#pragma comment(lib, "TKBO.lib"               )
+//#pragma comment(lib, "TKCAF.lib"              )
+//#pragma comment(lib, "TKCDF.lib"              )
+//#pragma comment(lib, "TKD3DHost.lib"          )
+//#pragma comment(lib, "TKD3DHostTest.lib"      )
+//#pragma comment(lib, "TKDCAF.lib"             )
+//#pragma comment(lib, "TKDE.lib"               )
+//#pragma comment(lib, "TKDECascade.lib"        )
+//#pragma comment(lib, "TKDEGLTF.lib"           )
+//#pragma comment(lib, "TKDEIGES.lib"           )
+//#pragma comment(lib, "TKDEOBJ.lib"            )
+//#pragma comment(lib, "TKDEPLY.lib"            )
+//#pragma comment(lib, "TKDESTL.lib"            )
+//#pragma comment(lib, "TKDEVRML.lib"           )
+//#pragma comment(lib, "TKDFBrowser.lib"        )
+//#pragma comment(lib, "TKDraw.lib"             )
+//#pragma comment(lib, "TKExpress.lib"          )
+//#pragma comment(lib, "TKFeat.lib"             )
+//#pragma comment(lib, "TKFillet.lib"           )
+//#pragma comment(lib, "TKHLR.lib"              )
+//#pragma comment(lib, "TKIVtk.lib"             )
+//#pragma comment(lib, "TKIVtkDraw.lib"         )
+//#pragma comment(lib, "TKLCAF.lib"             )
+//#pragma comment(lib, "TKMeshVS.lib"           )
+//#pragma comment(lib, "TKMessageModel.lib"     )
+//#pragma comment(lib, "TKMessageView.lib"      )
+//#pragma comment(lib, "TKOffset.lib"           )
+//#pragma comment(lib, "TKOpenGles.lib"         )
+//#pragma comment(lib, "TKOpenGlesTest.lib"     )
+//#pragma comment(lib, "TKOpenGlTest.lib"       )
+//#pragma comment(lib, "TKQADraw.lib"           )
+//#pragma comment(lib, "TKRWMesh.lib"           )
+//#pragma comment(lib, "TKShapeView.lib"        )
+//#pragma comment(lib, "TKStd.lib"              )
+//#pragma comment(lib, "TKStdL.lib"             )
+//#pragma comment(lib, "TKTInspector.lib"       )
+//#pragma comment(lib, "TKTInspectorAPI.lib"    )
+//#pragma comment(lib, "TKTObjDRAW.lib"         )
+//#pragma comment(lib, "TKToolsDraw.lib"        )
+//#pragma comment(lib, "TKTopTest.lib"          )
+//#pragma comment(lib, "TKTreeModel.lib"        )
+//#pragma comment(lib, "TKVCAF.lib"             )
+//#pragma comment(lib, "TKViewerTest.lib"       )
+//#pragma comment(lib, "TKVInspector.lib"       )
+//#pragma comment(lib, "TKXCAF.lib"             )
+//#pragma comment(lib, "TKXDEDRAW.lib"          )
+//#pragma comment(lib, "TKXMesh.lib"            )
+//#pragma comment(lib, "TKXml.lib"              )
+//#pragma comment(lib, "TKXmlL.lib"             )
+//#pragma comment(lib, "TKXmlTObj.lib"          )
+//#pragma comment(lib, "TKXmlXCAF.lib"          )
+//#pragma comment(lib, "TKXSDRAW.lib"           )
+//#pragma comment(lib, "TKXSDRAWDE.lib"         )
+//#pragma comment(lib, "TKXSDRAWGLTF.lib"       )
+//#pragma comment(lib, "TKXSDRAWIGES.lib"       )
+//#pragma comment(lib, "TKXSDRAWOBJ.lib"        )
+//#pragma comment(lib, "TKXSDRAWPLY.lib"        )
+//#pragma comment(lib, "TKXSDRAWSTEP.lib"       )
+//#pragma comment(lib, "TKXSDRAWSTL.lib"        )
+//#pragma comment(lib, "TKXSDRAWVRML.lib"       )
+
+ref class StepModel;
 //! Auxiliary tool for converting C# string into UTF-8 string.
 static TCollection_AsciiString toAsciiString(String^ theString)
 {
@@ -413,6 +494,9 @@ public:
 		}
 	}
 
+	/// <summary>
+	/// 뷰 큐브 생성
+	/// </summary>
 	void SetViweCube()
 	{
 		// #01. 뷰 큐브 객체 생성
@@ -1015,30 +1099,6 @@ public:
 	// Import / export functionality
 	// ============================================
 
-	/// <summary>
-	/// Import BRep file
-	/// </summary>
-	/// <param name="theFileName">Name of import file</param>
-	bool ImportBrep(System::String^ theFileName) { return ImportBrep(toAsciiString(theFileName)); }
-
-	/// <summary>
-	/// Import BRep file
-	/// </summary>
-	/// <param name="theFileName">Name of import file</param>
-	bool ImportBrep(const TCollection_AsciiString& theFileName)
-	{
-		TopoDS_Shape     aShape;
-		BRep_Builder     aBuilder;
-		Standard_Boolean isResult = BRepTools::Read(aShape, theFileName.ToCString(), aBuilder);
-		if (!isResult)
-		{
-			return false;
-		}
-
-		myAISContext()->Display(new AIS_Shape(aShape), Standard_True);
-		return true;
-	}
-
 	/*/// <summary>
    /// Import Step file
    /// </summary>
@@ -1177,47 +1237,6 @@ public:
 	}
 
 	/// <summary>
-	/// Import Iges file
-	/// </summary>
-	/// <param name="theFileName">Name of import file</param>
-	bool ImportIges(const TCollection_AsciiString& theFileName)
-	{
-		IGESControl_Reader aReader;
-		int                aStatus = aReader.ReadFile(theFileName.ToCString());
-
-		if (aStatus == IFSelect_RetDone)
-		{
-			aReader.TransferRoots();
-			TopoDS_Shape aShape = aReader.OneShape();
-			myAISContext()->Display(new AIS_Shape(aShape), Standard_False);
-		}
-		else
-		{
-			return false;
-		}
-
-		myAISContext()->UpdateCurrentViewer();
-		return true;
-	}
-
-	/// <summary>
-	/// Export BRep file
-	/// </summary>
-	/// <param name="theFileName">Name of export file</param>
-	bool ExportBRep(const TCollection_AsciiString& theFileName)
-	{
-		myAISContext()->InitSelected();
-		if (!myAISContext()->MoreSelected())
-		{
-			return false;
-		}
-
-		Handle(AIS_InteractiveObject) anIO = myAISContext()->SelectedInteractive();
-		Handle(AIS_Shape)             anIS = Handle(AIS_Shape)::DownCast(anIO);
-		return BRepTools::Write(anIS->Shape(), theFileName.ToCString()) != Standard_False;
-	}
-
-	/// <summary>
 	/// Export Step file
 	/// </summary>
 	/// <param name="theFileName">Name of export file</param>
@@ -1246,144 +1265,6 @@ public:
 		}
 
 		return true;
-	}
-
-	/// <summary>
-	/// Export Iges file
-	/// </summary>
-	/// <param name="theFileName">Name of export file</param>
-	bool ExportIges(const TCollection_AsciiString& theFileName)
-	{
-		IGESControl_Controller::Init();
-		IGESControl_Writer aWriter(Interface_Static::CVal("XSTEP.iges.unit"),
-			Interface_Static::IVal("XSTEP.iges.writebrep.mode"));
-
-		for (myAISContext()->InitSelected(); myAISContext()->MoreSelected();
-			myAISContext()->NextSelected())
-		{
-			Handle(AIS_InteractiveObject) anIO = myAISContext()->SelectedInteractive();
-			Handle(AIS_Shape)             anIS = Handle(AIS_Shape)::DownCast(anIO);
-			TopoDS_Shape                  aShape = anIS->Shape();
-			aWriter.AddShape(aShape);
-		}
-
-		aWriter.ComputeModel();
-		return aWriter.Write(theFileName.ToCString()) != Standard_False;
-	}
-
-	/// <summary>
-	/// Export Vrml file
-	/// </summary>
-	/// <param name="theFileName">Name of export file</param>
-	bool ExportVrml(const TCollection_AsciiString& theFileName)
-	{
-		TopoDS_Compound aRes;
-		BRep_Builder    aBuilder;
-		aBuilder.MakeCompound(aRes);
-
-		for (myAISContext()->InitSelected(); myAISContext()->MoreSelected();
-			myAISContext()->NextSelected())
-		{
-			Handle(AIS_InteractiveObject) anIO = myAISContext()->SelectedInteractive();
-			Handle(AIS_Shape)             anIS = Handle(AIS_Shape)::DownCast(anIO);
-			TopoDS_Shape                  aShape = anIS->Shape();
-			if (aShape.IsNull())
-			{
-				return false;
-			}
-
-			aBuilder.Add(aRes, aShape);
-		}
-
-		VrmlAPI_Writer aWriter;
-		aWriter.Write(aRes, theFileName.ToCString());
-
-		return true;
-	}
-
-	/// <summary>
-	/// Export Stl file
-	/// </summary>
-	/// <param name="theFileName">Name of export file</param>
-	bool ExportStl(const TCollection_AsciiString& theFileName)
-	{
-		TopoDS_Compound aComp;
-		BRep_Builder    aBuilder;
-		aBuilder.MakeCompound(aComp);
-
-		for (myAISContext()->InitSelected(); myAISContext()->MoreSelected();
-			myAISContext()->NextSelected())
-		{
-			Handle(AIS_InteractiveObject) anIO = myAISContext()->SelectedInteractive();
-			Handle(AIS_Shape)             anIS = Handle(AIS_Shape)::DownCast(anIO);
-			TopoDS_Shape                  aShape = anIS->Shape();
-			if (aShape.IsNull())
-			{
-				return false;
-			}
-			aBuilder.Add(aComp, aShape);
-		}
-
-		StlAPI_Writer aWriter;
-		aWriter.Write(aComp, theFileName.ToCString());
-		return true;
-	}
-
-	/// <summary>
-	/// Define which Import/Export function must be called
-	/// </summary>
-	/// <param name="theFileName">Name of Import/Export file</param>
-	/// <param name="theFormat">Determines format of Import/Export file</param>
-	/// <param name="theIsImport">Determines is Import or not</param>
-	bool TranslateModel(System::String^ theFileName, int theFormat, bool theIsImport)
-	{
-		bool isResult;
-
-		const TCollection_AsciiString aFilename = toAsciiString(theFileName);
-		if (theIsImport)
-		{
-			switch (theFormat)
-			{
-			case 0:
-				isResult = ImportBrep(aFilename);
-				break;
-			case 1:
-				isResult = ImportStep(aFilename);
-				break;
-			case 2:
-				isResult = ImportIges(aFilename);
-				break;
-			default:
-				isResult = false;
-			}
-		}
-		else
-		{
-			switch (theFormat)
-			{
-			case 0:
-				isResult = ExportBRep(aFilename);
-				break;
-			case 1:
-				isResult = ExportStep(aFilename);
-				break;
-			case 2:
-				isResult = ExportIges(aFilename);
-				break;
-			case 3:
-				isResult = ExportVrml(aFilename);
-				break;
-			case 4:
-				isResult = ExportStl(aFilename);
-				break;
-			case 5:
-				isResult = Dump(aFilename);
-				break;
-			default:
-				isResult = false;
-			}
-		}
-		return isResult;
 	}
 
 	void EnableAmbientOcclusion()
@@ -1490,6 +1371,193 @@ public:
 		return false;
 	}
 
+	bool CreateRectangleSensor(double x, double y, double z)
+	{
+		// * 점 위치
+		gp_Pnt pickedPoint(x, y, z);
+
+		// * 점에 근접한 페이스 찾기
+		TopoDS_Face face = FindNearestFace(pickedPoint);
+
+		if (face.IsNull())
+			return false;
+
+		// * 사각형 와이어 생성
+		gp_Pnt p1(x - 5, y - 5, z);
+		gp_Pnt p2(x + 5, y - 5, z);
+		gp_Pnt p3(x + 5, y + 5, z);
+		gp_Pnt p4(x - 5, y + 5, z);
+
+		//TopoDS_Edge e1 = BRepBuilderAPI_MakeEdge(p1, p2);
+		//TopoDS_Edge e2 = BRepBuilderAPI_MakeEdge(p2, p3);
+		//TopoDS_Edge e3 = BRepBuilderAPI_MakeEdge(p3, p4);
+		//TopoDS_Edge e4 = BRepBuilderAPI_MakeEdge(p4, p1);
+
+		//TopoDS_Wire rectWire = BRepBuilderAPI_MakeWire(e1, e2, e3, e4);
+
+		//// ----------------------------------------
+		//// Face의 법선 방향을 투영 방향으로 사용
+		//// ----------------------------------------
+		//gp_Dir projDir(0, 0, 1); // 기본값
+		//Handle(Geom_Surface) surf = BRep_Tool::Surface(face);
+		//GeomLProp_SLProps props(surf, 0.5, 0.5, 1, gp::Resolution());
+		//if (props.IsNormalDefined()) {
+		//	projDir = props.Normal(); // 면의 법선 방향
+		//}
+
+		//BRepProj_Projection proj(rectWire, face, projDir);
+
+		//// ----------------------------------------
+		//// 투영 결과 수집
+		//// ----------------------------------------
+		//TopTools_ListOfShape projected;
+		//for (proj.Init(); proj.More(); proj.Next()) {
+		//	projected.Append(proj.Current());
+		//}
+
+		//if (projected.IsEmpty()) {
+		//	std::cout << "Projection failed: no result." << std::endl;
+		//	return false;
+		//}
+
+		//// ----------------------------------------
+		//// Wire만 추출
+		//// ----------------------------------------
+		//TopoDS_Wire projectedWire;
+		//for (TopTools_ListIteratorOfListOfShape it(projected); it.More(); it.Next()) {
+		//	const TopoDS_Shape& s = it.Value();
+		//	if (s.ShapeType() == TopAbs_WIRE) {
+		//		projectedWire = TopoDS::Wire(s);
+		//		break;
+		//	}
+		//}
+
+		//if (projectedWire.IsNull()) {
+		//	std::cout << "Projection did not produce a Wire." << std::endl;
+		//	return false;
+		//}
+
+		//// ----------------------------------------
+		//// 새로운 Face 생성
+		//// ----------------------------------------
+		//BRepBuilderAPI_MakeFace newFace(face, projectedWire);
+		//if (!newFace.IsDone()) {
+		//	std::cout << "Failed to build new Face with projected wire." << std::endl;
+		//	return false;
+		//}
+
+		//TopoDS_Face resultFace = newFace.Face();
+
+		//// 색상 적용
+		//SetFaceColor(resultFace);
+
+		return  true;
+	}
+
+	/// <summary>
+	/// 점에 가장 가까운 Face 찾기
+	/// </summary>
+	/// <param name="queryPoint"></param>
+	/// <returns></returns>
+	TopoDS_Face  FindNearestFace(const gp_Pnt& queryPoint)
+	{
+		TopoDS_Shape aShape = GetOpenedShape();
+
+		TopoDS_Face nearestFace;
+		double minDist = 1e100; // 충분히 큰 값
+
+		// gp_Pnt → TopoDS_Vertex 변환
+		TopoDS_Vertex vtx = BRepBuilderAPI_MakeVertex(queryPoint);
+
+		// 모든 Face 순회
+		for (TopExp_Explorer exp(aShape, TopAbs_FACE); exp.More(); exp.Next())
+		{
+			TopoDS_Face face = TopoDS::Face(exp.Current());
+
+			BRepExtrema_ExtPF distTool(vtx, face);
+			if (distTool.IsDone() && distTool.NbExt() > 0)
+			{
+				double d = distTool.SquareDistance(1);
+
+				if (d < minDist)
+				{
+					minDist = d;
+					nearestFace = face;
+				}
+			}
+		}
+
+		return nearestFace;
+	}
+
+	/// <summary>
+	/// 열린 Shape 가져오기
+	/// </summary>
+	/// <returns></returns>
+	TopoDS_Shape GetOpenedShape()
+	{
+		AIS_ListOfInteractive list;
+
+		// * 현재 AISContext에 표시된 객체 목록 가져오기
+		myAISContext()->DisplayedObjects(list);
+
+		Standard_Integer size = list.Size();
+
+		// * 목록에서 AIS_Shape 타입 객체를 찾아 Shape 반환
+		for (AIS_ListIteratorOfListOfInteractive it(list); it.More(); it.Next())
+		{
+			// * DownCast을 통해 AIS_Shape 타입으로 변환 시도
+			Handle(AIS_Shape) aisShape = Handle(AIS_Shape)::DownCast(it.Value());
+
+			// * AIS_Shape 타입이 맞다면 Shape 반환
+			if (!aisShape.IsNull())
+			{
+				return aisShape->Shape(); // 현재 열린 Shape
+			}
+		}
+
+		return TopoDS_Shape(); // 못 찾으면 빈 Shape
+	}
+
+	/// <summary>
+	/// Face 색상 설정
+	/// </summary>
+	/// <param name="face"></param>
+	void SetFaceColor(TopoDS_Face face)
+	{
+		// * TopExp_Explorer는 TopoDS_Shape 내부를 탐색하는 도구
+		//  - face : TopoDS_Shape를 상속 받은 TopoDS_Face, TopoDS_Edge 등을 넣어 수행
+		//  - TopAbs_Face : Face 타입만 추출
+		TopExp_Explorer exp(face, TopAbs_FACE);
+
+		// * 탐색된 Face에 대해 색상 설정 및 Context에 표시
+		for (; exp.More(); exp.Next()) {
+			// * 현재 탐색된 Face 가져오기
+			TopoDS_Face face = TopoDS::Face(exp.Current());
+
+			// * 시각화를 위해 AIS_Shape로 변환
+			Handle(AIS_Shape) aisFace = new AIS_Shape(face);
+
+			// * 색상 설정 
+			aisFace->SetColor(Quantity_NOC_YELLOWGREEN);
+
+			// * 디스플레이 모드 설정 (쉐이딩)
+			myAISContext()->Display(aisFace, Standard_True);
+		}
+	}
+
+	///<summary>
+	/// STEP 파일 불러오기
+	///</summary>
+	bool LoadSTEPFile(String^ theFileName)
+	{
+		// * 파일 경로를 OCCT에서 인식 가능한 문자열로 생성
+		const TCollection_AsciiString aFilename = toAsciiString(theFileName);
+
+		// * STEP 파일 불러오기 수행
+		return ModelShape::Instance().SetSTEPModelShape(myAISContext(), aFilename);
+	}
+
 	/// <summary>
 	/// Initialize OCCTProxy
 	/// </summary>
@@ -1508,4 +1576,3 @@ private:
 	NCollection_Haft<Handle(AIS_InteractiveContext)> myAISContext;
 	NCollection_Haft<Handle(OpenGl_GraphicDriver)>   myGraphicDriver;
 };
-

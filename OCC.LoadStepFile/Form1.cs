@@ -36,6 +36,13 @@ namespace OCC.LoadStepFile
         /// 마우스 위치 Y
         /// </summary>
         int _mousePosY;
+
+        /// <summary>
+        /// * OpenCasCade 모델 매니저
+        ///  - 초기화는 생성자에서 수행
+        /// </summary>
+        OpenCasCadeModelManager _openCasCadeModelManager;
+
         // --------------------------------------------------------------------------------------------------------------
         #endregion
 
@@ -53,19 +60,20 @@ namespace OCC.LoadStepFile
 
             // * STEP 파일 경로
             //string stepFilePath = "../../../Sample/linkrods.step";
-            string stepFilePath = "../../../Sample/AssyModel.STEP";
+            //string stepFilePath = "../../../Sample/AssyModel.STEP";
+            string stepFilePath = "../../../Sample/Ball.STEP";
 
-            // #01. STEP 파일 불러오기 수행
-            LoadSTEPFile(stepFilePath);
+            //// #01. STEP 파일 불러오기 수행
+            //LoadSTEPFile(stepFilePath);
 
-            // * 쉐이딩 모드로 설정
-            _occtProxy.SetShadingMode();
+            //// * 쉐이딩 모드로 설정
+            //_occtProxy.SetShadingMode();
 
-            // * 선택 색상 적용
-            _occtProxy.SetSelectedStyle(220, 10, 10);
+            ////// * 선택 색상 적용
+            ////_occtProxy.SetSelectedStyle(220, 10, 10);
 
-            // * 하이라이트 색상 적용
-            _occtProxy.SetHighlightStyle(23, 44, 120);
+            //// * 하이라이트 색상 적용
+            //_occtProxy.SetHighlightStyle(23, 44, 120);
 
             // * 뷰 큐브 그리기
             _occtProxy.SetViweCube();
@@ -152,17 +160,20 @@ namespace OCC.LoadStepFile
             _occtProxy.Select();
 
             // * 센서 클릭 삽입 모드 선택 시 수행
-            if (tgInsertClickSensor.Checked)
+            if (tgInsertClickSensor.Checked && e.Button == MouseButtons.Left)
             {
                 double x = 0.0, y = 0.0, z = 0.0;
-                
+
                 // * 클릭한 위치의 좌표 가져오기
                 if (_occtProxy.GetPickPoint(ref x, ref y, ref z))
                 {
                     Debug.Print($"{x}, {y}, {z}");
-                    
+
                     // * 점 삽입
                     _occtProxy.InsertPointAsSphere(x, y, z, 2);
+
+                    // * 사각 센서 삽입
+                    _occtProxy.CreateRectangleSensor(x, y, z);
                 }
             }
 
@@ -323,13 +334,18 @@ namespace OCC.LoadStepFile
         {
             bool ret = true;
 
-            // #01. OCCTProxy 뷰어 초기화
-            //  - 패널 영역을 OpenCASCADE로 사용할 것 이다.
-            ret &= _occtProxy.InitViewer(panel1.Handle);
+            ret &= (_occtProxy != null);
 
-            if (!ret)
+            if (ret)
             {
-                XtraMessageBox.Show("OpenCASCADE 뷰어 초기화에 실패하였습니다.", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // #01. OCCTProxy 뷰어 초기화
+                //  - 패널 영역을 OpenCASCADE로 사용할 것 이다.
+                ret &= _occtProxy.InitViewer(panel1.Handle);
+
+                if (!ret)
+                {
+                    XtraMessageBox.Show("OpenCASCADE 뷰어 초기화에 실패하였습니다.", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
 
             return ret;
@@ -349,6 +365,9 @@ namespace OCC.LoadStepFile
 
                 // #03. 전체 보기 뷰
                 _occtProxy.ZoomAllView();
+                
+                
+                _openCasCadeModelManager.LoadSTEPFile(filePath);
             }
 
             return ret;
@@ -394,7 +413,9 @@ namespace OCC.LoadStepFile
             // #03. OpenCASCADE 를 사용하기 위한 OCCTProxy 객체 초기화
             _occtProxy = new OCCTProxy();
 
-
+            // * OpenCasCade 모델 매니저 초기화
+            _openCasCadeModelManager = OpenCasCadeModelManager.Instance;
+            _openCasCadeModelManager.Initialize(panel2);
         }
 
         #endregion
