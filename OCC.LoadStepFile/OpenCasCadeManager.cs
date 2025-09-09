@@ -172,7 +172,7 @@ namespace OCC.LoadStepFile
         {
             bool ret = true;
 
-            // #01.
+            // #01. 유효성 검사
             ret &= (_occtProxy != null);
             ret &= (_displayPanel != null);
 
@@ -186,6 +186,15 @@ namespace OCC.LoadStepFile
                 {
                     // * 뷰 큐브 그리기
                     _occtProxy.SetViweCube();
+                    
+                    // * 쉐이딩 모드로 설정
+                    _occtProxy.SetShadingMode();
+
+                    // * 선택 색상 적용
+                    _occtProxy.SetSelectedStyle(220, 10, 10);
+
+                    // * 하이라이트 색상 적용
+                    _occtProxy.SetHighlightStyle(23, 44, 120);
                 }
                 else
                 {

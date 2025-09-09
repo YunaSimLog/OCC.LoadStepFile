@@ -1,6 +1,7 @@
 #pragma once
 #include <AIS_Shape.hxx>
 #include <map>
+#include <TopoDS_Face.hxx>
 
 /// <summary>
 /// 모델 형상 클래스
@@ -47,21 +48,41 @@ private:
 	/// <summary>
 	/// STEP 모델 형상
 	/// </summary>
+	TopoDS_Shape _modelShape;
+
+	/// <summary>
+	/// 뷰어 표시용 STEP 모델 형상
+	/// </summary>
 	Handle_AIS_Shape _hStepModelShape;
 
 	/// <summary>
-	/// 센서	형상 맵
+	/// 뷰여 표시용 센서	형상 맵
 	/// </summary>
 	std::map<int, Handle_AIS_Shape> _hSensorShape;
 
-	TCollection_AsciiString toAsciiString(const System::String^ theString);
+	TCollection_AsciiString ToAsciiString(const System::String^ theString);
+
+	/// <summary>
+	/// 좌표와 가까운 면 찾기
+	/// </summary>
+	TopoDS_Face ModelShape::FindNearestFace(const gp_Pnt& point);
+
+	/// <summary>
+	/// 면의 Normal 방향 찾기
+	/// </summary>
+	gp_Dir GetFaceNormal(const TopoDS_Face& face, const gp_Pnt& refPoint);
+
+	/// <summary>
+	/// 사각형의 4점 만들기
+	/// </summary>
+	std::array<gp_Pnt, 4> MakeRectanlgePoints(const gp_Pnt& centerPoint, gp_Dir& normal, Standard_Real width, Standard_Real height);
+
+	/// <summary>
+	/// 사각형 와이어 만들기
+	/// </summary>
+	TopoDS_Shape MakeRectangleWire(const std::array<gp_Pnt, 4>& recPoints);
 
 public:
-	/// <summary>
-	/// STEP 모델 형상 반환
-	/// </summary>
-	Handle_AIS_Shape GetStepModelShape() const;
-
 	/// <summary>
 	/// STEP 모델 형상 설정
 	/// </summary>
@@ -70,10 +91,10 @@ public:
 	/// <summary>
 	/// 센서 형상 반환
 	/// </summary>
-	Handle_AIS_Shape GetSensorShape(int sensorId) const;
+	Handle_AIS_Shape ModelShape::GetSensorShape(const int sensorId) const;
 
 	/// <summary>
 	/// 센서 형상 설정
 	/// </summary>
-	void SetSensorShape(int sensorId);
+	bool ModelShape::SetSensorShape(Handle(AIS_InteractiveContext)& hAISContext, const int sensorId, const gp_Pnt& point, const double width, const double height);
 };

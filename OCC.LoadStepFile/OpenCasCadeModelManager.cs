@@ -78,11 +78,13 @@ namespace OCC.LoadStepFile
                 {
                     Debug.Print($"{x}, {y}, {z}");
 
-                    // * 점 삽입
-                    _occtProxy.InsertPointAsSphere(x, y, z, 2);
+                    _occtProxy.SetSensorShape(0, x, y, z, 10, 10);
 
-                    // * 사각 센서 삽입
-                    _occtProxy.CreateRectangleSensor(x, y, z);
+                    //// * 점 삽입
+                    //_occtProxy.InsertPointAsSphere(x, y, z, 2);
+
+                    //// * 사각 센서 삽입
+                    //_occtProxy.CreateRectangleSensor(x, y, z);
                 }
             }
 

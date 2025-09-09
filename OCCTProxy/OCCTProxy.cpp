@@ -75,6 +75,7 @@
 #include <TopExp_Explorer.hxx>
 #include <BRepExtrema_ExtPF.hxx>
 #include <gp_Pnt.hxx>
+#include <BRepExtrema_DistShapeShape.hxx>
 
 #include <vcclr.h>
 #include <GeomLProp_SLProps.hxx>
@@ -1556,6 +1557,27 @@ public:
 
 		// * STEP 파일 불러오기 수행
 		return ModelShape::Instance().SetSTEPModelShape(myAISContext(), aFilename);
+	}
+
+	/// <summary>
+	/// 센서 형상 추가
+	/// </summary>
+	/// <param name="sensorId">센서 아이디</param>
+	/// <param name="x">센서 위치 X</param>
+	/// <param name="y">센서 위치 Y</param>
+	/// <param name="z">센서 위치 Z</param>
+	/// <param name="width">센서 가로 사이즈</param>
+	/// <param name="height">센서 세로 사이즈</param>
+	/// <returns></returns>
+	bool SetSensorShape(const int sensorId, const double x, const double y, const double z, const double width, const double height)
+	{
+		// * 좌표 점 생성
+		const gp_Pnt point(x, y, z);
+
+		// * 센서 형상 추가
+		ModelShape::Instance().SetSensorShape(myAISContext(),sensorId, point, width, height);
+
+		return true;
 	}
 
 	/// <summary>
