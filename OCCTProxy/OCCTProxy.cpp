@@ -798,16 +798,12 @@ public:
 			return;
 		}
 
-		// * 쉐이딩 모드
-		AIS_DisplayMode aCurrentMode = AIS_Shaded;
-
-		// #02. 디스플레이 모드를 쉐이딩 모드로 설정
-		myAISContext()->SetDisplayMode(aCurrentMode, Standard_False);
-
-		// #03. 뷰 업데이트
-		myAISContext()->UpdateCurrentViewer();
+		ModelShape::Instance().SetShadingMode(myAISContext());
 	}
 
+	/// <summary>
+	/// 와이어 모드로 설정
+	/// </summary>
 	void SetWireMode()
 	{
 		// #01. 컨텍스트가 있는지 여부 확인
@@ -816,14 +812,7 @@ public:
 			return;
 		}
 
-		// * 쉐이딩 모드
-		AIS_DisplayMode aCurrentMode = AIS_WireFrame;
-
-		// #02. 디스플레이 모드를 와이어 모드로 설정
-		myAISContext()->SetDisplayMode(aCurrentMode, Standard_False);
-
-		// #03. 뷰 업데이트
-		myAISContext()->UpdateCurrentViewer();
+		ModelShape::Instance().SetWireMode(myAISContext());
 	}
 
 	/// <summary>

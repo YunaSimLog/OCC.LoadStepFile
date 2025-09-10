@@ -26,7 +26,8 @@
 #include <BRepPrimAPI_MakeSphere.hxx>
 #include <BRepProj_Projection.hxx>
 #include <BRepPrimAPI_MakePrism.hxx>
-#include <BRepTools.hxx>
+#include <BRepBuilderAPI_Transform.hxx>
+#include <ShapeFix_Wire.hxx>
 
 // 면의 normal 방향 찾기
 #include <GeomAPI_ProjectPointOnSurf.hxx>
@@ -34,6 +35,12 @@
 
 // 사각형 와이어 만들기
 #include <BRepBuilderAPI_MakePolygon.hxx>
+
+// 인접한 면 찾기
+#include <queue>
+#include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
+#include <TopExp.hxx>
+#include <unordered_set>
 
 /// <summary>
 /// 모델 형상 생성자
@@ -111,6 +118,11 @@ bool ModelShape::SetSTEPModelShape(Handle(AIS_InteractiveContext)& hAISContext, 
 			// * Step 모델 색상 (회색)
 			hAISContext->SetColor(aisShape, Quantity_NOC_SLATEGRAY2, Standard_False);
 
+			// * 모델 쉐이딩 및 테두리 표시
+			hAISContext->SetDisplayMode(aisShape, AIS_Shaded, Standard_True);
+			aisShape->Attributes()->SetFaceBoundaryDraw(true); // 테두리 표시
+			hAISContext->Redisplay(aisShape, Standard_True);
+
 			// * 선택 모드 활성화 (Face 선택 가능)
 			hAISContext->Activate(aisShape, AIS_Shape::SelectionMode(TopAbs_FACE));
 
@@ -136,66 +148,123 @@ bool ModelShape::SetSTEPModelShape(Handle(AIS_InteractiveContext)& hAISContext, 
 /// <param name="point">센서 중심 위치 포인트</param>
 /// <param name="width">센서 가로 사이즈</param>
 /// <param name="height">센서 세로 사이즈</param>
-bool ModelShape::SetSensorShape(Handle(AIS_InteractiveContext)& hAISContext, const int sensorId, const gp_Pnt& point, const double width, const double height)
+bool ModelShape::SetSensorShape(Handle(AIS_InteractiveContext)& hAISContext, const int sensorId, const gp_Pnt& point, const Standard_Real width, const Standard_Real height)
 {
 	// #. 좌표와 가까운 면 찾기
 	TopoDS_Face nearestFace = FindNearestFace(point);
 
-	// #. Face의 normal 방향 가져오기
-	gp_Dir projDir = GetFaceNormal(nearestFace, point);
+	// #. 좌표와 가까운 면을 기준으로 사각형 영역에 해당하는 면 찾기
+	std::vector<TopoDS_Face> connectedFaces = FineConnectedFacesWithinArea(point, nearestFace, width, height, hAISContext);
 
-	// #. normal을 가진 사각형 점 가져오기
-	auto rectPoints = MakeRectanlgePoints(point, projDir, width, height);
+	BRepBuilderAPI_MakeWire  sensorMakeWire;
 
-	// #. 사각형 와이어 만들기
-	TopoDS_Shape rectWire = MakeRectangleWire(rectPoints);
-
-	// #. Face 위로 투영
-	BRepProj_Projection proj(rectWire, nearestFace, projDir);
-
-	// * 투영이 유효하지 않은 경우
-	if (!proj.IsDone())
+	for (int i = 0; i < connectedFaces.size(); ++i)
 	{
-		return false;
+		TopoDS_Face targetFace = connectedFaces[i];
+
+		// #. Face의 normal 방향 가져오기
+		gp_Dir projDir = GetFaceNormal(targetFace, point);
+
+		// #. normal을 가진 사각형 점 가져오기
+		auto rectPoints = MakeRectanlgePoints(point, projDir, width, height);
+
+		// #. 사각형 와이어 만들기
+		TopoDS_Shape rectWire = MakeRectangleWire(rectPoints);
+
+		// #. Face 위로 투영
+		BRepProj_Projection proj(rectWire, targetFace, projDir);
+
+		// * 투영이 유효하지 않은 경우
+		if (!proj.IsDone())
+		{
+			return false;
+		}
+
+		// #. 면에 투영된 형상
+		TopoDS_Shape projectedShape = proj.Shape();
+
+		// 점 단위로 Wire 재생성
+		TopoDS_Wire fixedWire = RecreateWireFromPointsOnFace(projectedShape, targetFace);
+
+		// Face 생성
+		TopoDS_Face stickerFace = BRepBuilderAPI_MakeFace(fixedWire);
+
+		// * 생성할 평면을 0.1mm 정도 위로 띄우기
+		//  - 모델과 면이 겹쳐서 생성되면 번쩍거리고 잘 안보임
+		gp_Vec offset(projDir);
+		offset.Normalize();
+		offset *= 0.1;
+
+		// * 이동 변환 적용
+		gp_Trsf trsf;
+		trsf.SetTranslation(offset);
+
+		TopoDS_Shape visualSticker = BRepBuilderAPI_Transform(stickerFace, trsf);
+
+		// * AIS_Shape로 표시
+		Handle(AIS_Shape) stickerShape = new AIS_Shape(visualSticker);
+		hAISContext->Display(stickerShape, Standard_False);
+		hAISContext->SetColor(stickerShape, Quantity_NOC_SEAGREEN, Standard_False);
 	}
-
-	// #. 면에 투영된 형상
-	TopoDS_Shape projectedShape = proj.Shape();
-
-	// #. 면에 투영된 형상에서 와이어 가져오기
-	TopoDS_Wire projectedWire;
-	for (TopExp_Explorer exp(projectedShape, TopAbs_WIRE); exp.More(); exp.Next())
-	{
-		projectedWire = TopoDS::Wire(exp.Current());
-		break; // 첫 번째 Wire만 사용
-	}
-
-	// * 투영된 형상의 와이어가 유호하지 않은 경우
-	if (projectedWire.IsNull())
-	{
-		return false;
-	}
-
-	// #. 투영 와이어로 면 생성
-	TopoDS_Face stickerFace = BRepBuilderAPI_MakeFace(projectedWire);
-
-	// #. 두께로 사용할 벡터 생성
-	gp_Vec offset(projDir);
-	offset.Scale(0.1);
-
-	// #. 0.1mm 두께로 얇게 돌출
-	TopoDS_Shape thinSticker = BRepPrimAPI_MakePrism(stickerFace, offset);
-
-	// #. AIS_Shape로 생성
-	Handle(AIS_Shape) thinStickerShape = new AIS_Shape(thinSticker);
-
-	// * Viewer 에 표시
-	hAISContext->Display(thinStickerShape, Standard_False);
-
-	// #. 색상 정보 설정
-	hAISContext->SetColor(thinStickerShape, Quantity_NOC_SEAGREEN, Standard_False);
 
 	return true;
+}
+
+/// <summary>
+/// 점 단위로 와이어 재작성
+/// </summary>
+/// <param name="projectedShape"></param>
+/// <param name="face"></param>
+/// <returns></returns>
+TopoDS_Wire  ModelShape::RecreateWireFromPointsOnFace(const TopoDS_Shape& projectedShape, const TopoDS_Face& face)
+{
+	std::vector<gp_Pnt> points;
+
+	// 1. 기존 Edge 끝점 추출
+	for (TopExp_Explorer exp(projectedShape, TopAbs_EDGE); exp.More(); exp.Next())
+	{
+		TopoDS_Edge edge = TopoDS::Edge(exp.Current());
+		TopoDS_Vertex v1 = TopExp::FirstVertex(edge);
+		TopoDS_Vertex v2 = TopExp::LastVertex(edge);
+
+		gp_Pnt p1 = BRep_Tool::Pnt(v1);
+		gp_Pnt p2 = BRep_Tool::Pnt(v2);
+
+		points.push_back(p1);
+		points.push_back(p2);
+	}
+
+	// 2. 중복점 제거 (같은 좌표)
+	std::vector<gp_Pnt> uniquePoints;
+	for (auto& p : points)
+	{
+		bool duplicate = false;
+		for (auto& up : uniquePoints)
+		{
+			if (p.IsEqual(up, 1e-7)) { duplicate = true; break; }
+		}
+		if (!duplicate) uniquePoints.push_back(p);
+	}
+
+	// 3. Edge 재생성
+	BRepBuilderAPI_MakeWire mkWire;
+	for (size_t i = 0; i < uniquePoints.size(); ++i)
+	{
+		const gp_Pnt& p1 = uniquePoints[i];
+		const gp_Pnt& p2 = uniquePoints[(i + 1) % uniquePoints.size()]; // 마지막 점은 첫 점과 연결
+		mkWire.Add(BRepBuilderAPI_MakeEdge(p1, p2));
+	}
+
+	TopoDS_Wire wire = mkWire.Wire();
+
+	// 4. ShapeFix_Wire로 끝점 연결 및 닫힘 보장
+	ShapeFix_Wire fixWire;
+	fixWire.Load(wire);
+	fixWire.FixConnected();
+	fixWire.FixClosed();
+	fixWire.Perform();
+
+	return fixWire.Wire();
 }
 
 /// <summary>
@@ -219,6 +288,139 @@ TopoDS_Face ModelShape::FindNearestFace(const gp_Pnt& point)
 		}
 	}
 	return nearestFace;
+}
+
+/// <summary>
+/// 기준 면을 기준으로 특정 영역 내의 인접한 면들 찾기 사용자 정의 해시
+/// </summary>
+struct FaceHasher {
+	std::size_t operator()(const TopoDS_Face& f) const {
+		return (std::size_t)f.TShape().get();
+	}
+};
+
+/// <summary>
+/// 기준 면을 기준으로 특정 영역 내의 인접한 면들 찾기의 비교 함수
+/// </summary>
+struct FaceEqual {
+	bool operator()(const TopoDS_Face& a, const TopoDS_Face& b) const {
+		return a.IsSame(b);
+	}
+};
+
+/// <summary>
+/// 기준 점과 기준 면을 기준으로 특정 영역 내의 인접한 면들 찾기 
+/// </summary>
+std::vector<TopoDS_Face> ModelShape::FineConnectedFacesWithinArea(const gp_Pnt& basePoint, const TopoDS_Face& baseFace, Standard_Real width, Standard_Real height, Handle(AIS_InteractiveContext)& hAISContext)
+{
+	// * 찾은 면 결과
+	std::vector<TopoDS_Face> result;
+
+	// #. 영역 범위 값 구하기
+	double areaValue = sqrt(pow(width * 0.5, 2) + pow(height * 0.5, 2));
+
+	// #. 형상 내에서 특정 타입(Edge)와 그것을 포함하는 상위(Face)간의 관계를 매핑
+	//  - 1번째 인자: 전체 모델
+	//  - 2번째 인자: 엣지 단위로
+	//  - 3번째 인자: 엣지가 속한 페이스
+	//  - 4번째 인자: 결과
+	TopTools_IndexedDataMapOfShapeListOfShape edgeToFaceMap;
+	TopExp::MapShapesAndAncestors(_modelShape, TopAbs_EDGE, TopAbs_FACE, edgeToFaceMap);
+
+	// * 평면 탐색을 위한 평면 담기
+	std::queue < TopoDS_Face> q;
+	q.push(baseFace);
+
+	// * 검색 대상으로 사용한 면인지 구분을 위한 해시 컨테이너
+	//  - TopoDS_Face는 기본적으로 std::hash 및 operator==가 정의되어 있지않으므로, FaceHasher, FaceEqual 정의
+	std::unordered_set<TopoDS_Face, FaceHasher, FaceEqual> visited;
+	visited.insert(baseFace);
+
+	while (!q.empty())
+	{
+		TopoDS_Face current = q.front();
+		q.pop();
+
+		// 기준 Face도 결과에 포함됨
+		result.push_back(current);
+
+		// #. 면에 존재하는 모서리선들 순회
+		for (TopExp_Explorer exp(current, TopAbs_EDGE); exp.More(); exp.Next())
+		{
+			// * 대상 모서리선
+			TopoDS_Edge edge = TopoDS::Edge(exp.Current());
+
+			// * 모서리선에 연결된 면들 가져오기
+			const TopTools_ListOfShape adjacentFaces = edgeToFaceMap.FindFromKey(edge);
+
+			// #. 가져온 면들 순회
+			for (TopTools_ListIteratorOfListOfShape it(adjacentFaces); it.More(); it.Next())
+			{
+				// * 이미 탐색한 면이지 여부 체크
+				TopoDS_Face adjFace = TopoDS::Face(it.Value());
+				if (visited.find(adjFace) != visited.end())
+				{
+					continue;;
+				}
+
+				// * 기준점과 대상 면의 거리를 구하기
+				TopoDS_Vertex vertex = BRepBuilderAPI_MakeVertex(basePoint);
+				BRepExtrema_ExtPF dist(vertex, adjFace);
+
+				Handle(AIS_Shape) aisFace = new AIS_Shape(adjFace);
+
+				bool re = dist.IsDone();
+				int n = dist.NbExt();
+
+				// * 거리 계산이 유효한지 여부 확인
+				if (dist.IsDone() && dist.NbExt() > 0)
+				{
+					// * 최소 거리 계산
+					Standard_Real minDistance = sqrt(dist.SquareDistance(1));
+
+					std::cout << "거리: " << minDistance << std::endl;
+
+					// * 영역 범위 내 거리 값인지 여부 확인
+					if (minDistance <= areaValue)
+					{
+						// * 검색한 면 대상 추가
+						visited.insert(adjFace);
+						q.push(adjFace);
+
+						// * 찾은 면은 오렌지색
+						aisFace->SetColor(Quantity_NOC_ORANGE);
+						//hAISContext->Display(aisFace, Standard_True);
+					}
+				}
+				else
+				{
+					aisFace->SetColor(Quantity_NOC_GREENYELLOW);
+					//hAISContext->Display(aisFace, Standard_True);
+				}
+			}
+		}
+	}
+
+	std::cout << result.size() << std::endl;
+
+	return  result;
+}
+
+/// <summary>
+/// 면을 쉘로 합치기
+/// </summary>
+TopoDS_Shell MakeShellFromFaces(const std::vector<TopoDS_Face>& faces)
+{
+	BRep_Builder builder;
+	TopoDS_Shell shell;
+	builder.MakeShell(shell);
+
+	for (const auto& f : faces)
+	{
+		builder.Add(shell, f);
+	}
+
+	return shell;
 }
 
 /// <summary>
@@ -329,7 +531,7 @@ TopoDS_Shape ModelShape::MakeRectangleWire(const std::array<gp_Pnt, 4>& recPoint
 	BRepBuilderAPI_MakePolygon polygon;
 
 	// #01. 점 순회하며, 폴리곤에 점 추가
-	for (int i=0;i<recPoints.max_size();++i)
+	for (int i = 0; i < recPoints.max_size(); ++i)
 	{
 		polygon.Add(recPoints[i]);
 	}
@@ -339,4 +541,30 @@ TopoDS_Shape ModelShape::MakeRectangleWire(const std::array<gp_Pnt, 4>& recPoint
 
 	// #03. 폴리곤의 와이어 반환
 	return polygon.Wire();
+}
+
+void ModelShape::SetShadingMode(Handle(AIS_InteractiveContext)& hAISContext)
+{
+	// * STEP 모델 존재하지 않는 경우
+	if (_hStepModelShape.IsNull())
+	{
+		return;
+	}
+
+	// * 모델 쉐이딩 및 테두리 표시
+	hAISContext->SetDisplayMode(_hStepModelShape, AIS_Shaded, Standard_True);
+	hAISContext->Redisplay(_hStepModelShape, Standard_True);
+}
+
+void ModelShape::SetWireMode(Handle(AIS_InteractiveContext)& hAISContext)
+{
+	// * STEP 모델 존재하지 않는 경우
+	if (_hStepModelShape.IsNull())
+	{
+		return;
+	}
+
+	// * 모델 쉐이딩 및 테두리 표시
+	hAISContext->SetDisplayMode(_hStepModelShape, AIS_WireFrame, Standard_True);
+	hAISContext->Redisplay(_hStepModelShape, Standard_True);
 }

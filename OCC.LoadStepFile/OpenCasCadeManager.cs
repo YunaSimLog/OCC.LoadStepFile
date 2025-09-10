@@ -186,7 +186,7 @@ namespace OCC.LoadStepFile
                 {
                     // * 뷰 큐브 그리기
                     _occtProxy.SetViweCube();
-                    
+
                     // * 쉐이딩 모드로 설정
                     _occtProxy.SetShadingMode();
 
@@ -214,6 +214,25 @@ namespace OCC.LoadStepFile
         #endregion
 
         #region public
+
+        /// <summary>
+        /// 쉐이딩 모드로 설정
+        /// </summary>
+        public void SetShadingMode()
+        {
+            // #01. 쉐이딩 모드로 설정
+            _occtProxy.SetShadingMode();
+        }
+
+        /// <summary>
+        /// 와이어 모드로 설정
+        /// </summary>
+        public void SetWireMode()
+        {
+            // #01. 와이어 모드로 설정
+            _occtProxy.SetWireMode();
+        }
+
         #endregion
     }
 }

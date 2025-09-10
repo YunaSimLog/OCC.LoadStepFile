@@ -2,6 +2,8 @@
 #include <AIS_Shape.hxx>
 #include <map>
 #include <TopoDS_Face.hxx>
+#include <TopoDS_Shell.hxx>
+#include <TopoDS_Wire.hxx>
 
 /// <summary>
 /// 모델 형상 클래스
@@ -68,6 +70,13 @@ private:
 	TopoDS_Face ModelShape::FindNearestFace(const gp_Pnt& point);
 
 	/// <summary>
+	/// 기준 점과 기준 면을 기준으로 특정 영역 내의 인접한 면들 찾기 
+	/// </summary>
+	std::vector<TopoDS_Face> FineConnectedFacesWithinArea(const gp_Pnt& basePoint, const TopoDS_Face& baseFace, Standard_Real width, Standard_Real height, Handle(AIS_InteractiveContext)& hAISContext);
+
+	TopoDS_Wire RecreateWireFromPointsOnFace(const TopoDS_Shape& projectedShape, const TopoDS_Face& face);
+
+	/// <summary>
 	/// 면의 Normal 방향 찾기
 	/// </summary>
 	gp_Dir GetFaceNormal(const TopoDS_Face& face, const gp_Pnt& refPoint);
@@ -96,5 +105,9 @@ public:
 	/// <summary>
 	/// 센서 형상 설정
 	/// </summary>
-	bool ModelShape::SetSensorShape(Handle(AIS_InteractiveContext)& hAISContext, const int sensorId, const gp_Pnt& point, const double width, const double height);
+	bool ModelShape::SetSensorShape(Handle(AIS_InteractiveContext)& hAISContext, const int sensorId, const gp_Pnt& point, const Standard_Real width, const Standard_Real height);
+
+	void SetShadingMode(Handle(AIS_InteractiveContext)& hAISContext);
+
+	void SetWireMode(Handle(AIS_InteractiveContext)& hAISContext);
 };

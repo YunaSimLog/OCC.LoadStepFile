@@ -85,13 +85,13 @@ namespace OCC.LoadStepFile
         private void btnShowShadingMode_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
             // #01. 쉐이딩 모드로 설정
-            _occtProxy.SetShadingMode();
+            _openCasCadeModelManager.SetShadingMode();
         }
 
         private void btnShowWireMode_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
             // #01. 와이어 모드로 설정
-            _occtProxy.SetWireMode();
+            _openCasCadeModelManager.SetWireMode();
         }
 
         private void btnAmbientOcclusion_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
